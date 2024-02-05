@@ -45,7 +45,8 @@ class HelloTriangleApplication
 
     void cleanup()
     {
-
+      glfwDestroyWindow(window);
+      glfwTerminate();
     }
 };
 
