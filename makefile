@@ -9,5 +9,8 @@ VulkanTest: main.cc
 test: VulkanTest
 	./VulkanTest
 
+run: VulkanTest
+	./VulkanTest
+
 clean:
 	rm -f VulkanTest
