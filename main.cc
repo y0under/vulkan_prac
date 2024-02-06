@@ -62,8 +62,8 @@ class HelloTriangleApplication
         requiredGlfwExtensions.emplace_back(glfwExtensions[i]);
       }
 
-      // why: the code is defferent between tutrial code because got VK_ERROR_INCOMPATIBLE_DRIVER with vkCreateInstance execution. 
-      // ref: https://saschawillems.de/vulkantutorial/en/FAQ.html
+      // why: the code is defferent between tutrial code
+      //      because got VK_ERROR_INCOMPATIBLE_DRIVER with vkCreateInstance execution. 
       requiredGlfwExtensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 
       createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
@@ -87,6 +87,7 @@ class HelloTriangleApplication
 
     void cleanup()
     {
+      vkDestroyInstance(instance, nullptr);
       glfwDestroyWindow(window);
       glfwTerminate();
     }
