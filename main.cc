@@ -62,10 +62,11 @@ class HelloTriangleApplication
         requiredGlfwExtensions.emplace_back(glfwExtensions[i]);
       }
 
+      // why: the code is defferent between tutrial code because got VK_ERROR_INCOMPATIBLE_DRIVER with vkCreateInstance execution. 
+      // ref: https://saschawillems.de/vulkantutorial/en/FAQ.html
       requiredGlfwExtensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 
       createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-
 
       createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredGlfwExtensions.size());
       createInfo.ppEnabledExtensionNames = requiredGlfwExtensions.data();
@@ -75,8 +76,6 @@ class HelloTriangleApplication
       if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
         throw std::runtime_error("failed to create instance!!!!11!");
       }
-
-
     }
 
     void mainLoop()
