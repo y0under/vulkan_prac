@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstdlib>
+#include <cstring>
 
 class HelloTriangleApplication
 {
@@ -19,6 +20,17 @@ class HelloTriangleApplication
     // values
     const uint32_t kwidth = 800;
     const uint32_t kheight = 600;
+
+    const std::vector<const char*> validationLayers = {
+      "VK_LAYER_KHRONOS_validation"
+    };
+
+#ifdef NDEBUG
+    const bool enableValidationLayers = false;
+#else
+    const bool enableValidationLayers = true;
+#endif
+
     GLFWwindow* window;
     VkInstance instance;
 
@@ -39,6 +51,10 @@ class HelloTriangleApplication
 
     void createInstance()
     {
+      if (enableValidationLayers && !checkValidationLayerSupport()) {
+        throw std::runtime_error("validation layers requested, but not available!!!!11!");
+      }
+
       VkApplicationInfo appInfo{};
       appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
       appInfo.pApplicationName = "Hello Triangle";
@@ -90,6 +106,31 @@ class HelloTriangleApplication
       vkDestroyInstance(instance, nullptr);
       glfwDestroyWindow(window);
       glfwTerminate();
+    }
+
+    bool checkValidationLayerSupport()
+    {
+      uint32_t layerCount;
+      vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+      std::vector<VkLayerProperties> availableLayers(layerCount);
+      vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+      for (const char* layerName: validationLayers) {
+        bool layerFound = false;
+
+        for (const auto& layerProperties: availableLayers) {
+          if (strcmp(layerName, layerProperties.layerName) == 0) {
+            layerFound = true;
+            break;
+          }
+        }
+
+        if (!layerFound)
+          return false;
+      }
+
+      return true;
     }
 };
 
