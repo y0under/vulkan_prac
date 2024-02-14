@@ -93,7 +93,7 @@ class HelloTriangleApplication
       appInfo.apiVersion = VK_API_VERSION_1_0;
 
       VkInstanceCreateInfo createInfo{};
-      createInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+      createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
       createInfo.pApplicationInfo = &appInfo;
 
       auto extensions = getRequiredExtensions();
@@ -122,15 +122,19 @@ class HelloTriangleApplication
 
       if (enableValidationLayers) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledExtensionNames = validationLayers.data();
+        createInfo.ppEnabledLayerNames = validationLayers.data();
       }
       else {
         createInfo.enabledLayerCount = 0;
+        createInfo.ppEnabledLayerNames = nullptr;
       }
 
-      if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
+      // if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
+      auto let = vkCreateInstance(&createInfo, nullptr, &instance);
+        if (let != VK_SUCCESS) {
+          std::cerr << let << std::endl;
         throw std::runtime_error("failed to create instance!!!!11!");
-      }
+        }
     }
 
     void mainLoop()
