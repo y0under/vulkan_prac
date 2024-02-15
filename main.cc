@@ -80,7 +80,9 @@ class HelloTriangleApplication
 
     void createInstance()
     {
-      if (enableValidationLayers && !checkValidationLayerSupport()) {
+      // if (enableValidationLayers && !checkValidationLayerSupport()) {
+      auto is_available_validation = enableValidationLayers && !checkValidationLayerSupport();
+      if (is_available_validation){
         throw std::runtime_error("validation layers requested, but not available!!!!11!");
       }
 
@@ -173,8 +175,10 @@ class HelloTriangleApplication
           }
         }
 
-        if (!layerFound)
+        if (!layerFound) {
+          std::cout << "return false" << std::endl;
           return false;
+        }
       }
 
       return true;
@@ -198,8 +202,10 @@ class HelloTriangleApplication
       createInfo.pfnUserCallback = debugCallback;
       createInfo.pUserData = nullptr;
 
-      if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) !=
-          VK_SUCCESS) {
+      // if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) !=
+      auto let = CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger);
+          if (let != VK_SUCCESS) {
+            std::cout << let << std::endl;
         throw std::runtime_error("failed to set up debug messenger!!!!11!");
       }
     }
@@ -234,6 +240,8 @@ class HelloTriangleApplication
 int main()
 {
   HelloTriangleApplication app;
+
+  std::cout << (enableValidationLayers ? "true" : "false") << std::endl;
 
   try {
     app.run();
