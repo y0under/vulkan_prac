@@ -11,7 +11,6 @@
 #else
     const bool enableValidationLayers = true;
 #endif
-
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
                                       const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
                                       const VkAllocationCallbacks* pAllocator,
@@ -59,7 +58,7 @@ class HelloTriangleApplication
     };
 
     GLFWwindow* window;
-    VkInstance instance;
+    VkInstance instance_;
     VkDebugUtilsMessengerEXT debugMessenger;
 
     // functions
@@ -102,25 +101,13 @@ class HelloTriangleApplication
       createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
       createInfo.ppEnabledExtensionNames = extensions.data();
 
-      uint32_t glfwExtensionCount = 0;
-      const char** glfwExtensions;
-
-      glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-      std::vector<const char*> requiredGlfwExtensions;
-
-      for (uint32_t i = 0; i < glfwExtensionCount; ++i) {
-        requiredGlfwExtensions.emplace_back(glfwExtensions[i]);
-      }
-
-      // why: the code is defferent between tutrial code
-      //      because got VK_ERROR_INCOMPATIBLE_DRIVER with vkCreateInstance execution. 
-      requiredGlfwExtensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-
+      // why: for mac code
       createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
+      /*
       createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredGlfwExtensions.size());
       createInfo.ppEnabledExtensionNames = requiredGlfwExtensions.data();
+      */
 
       if (enableValidationLayers) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
@@ -131,11 +118,11 @@ class HelloTriangleApplication
         createInfo.ppEnabledLayerNames = nullptr;
       }
 
-      // if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-      auto let = vkCreateInstance(&createInfo, nullptr, &instance);
+      // if (vkCreateInstance(&createInfo, nullptr, &instance_) != VK_SUCCESS) {
+      auto let = vkCreateInstance(&createInfo, nullptr, &instance_);
         if (let != VK_SUCCESS) {
           std::cerr << let << std::endl;
-        throw std::runtime_error("failed to create instance!!!!11!");
+        throw std::runtime_error(std::to_string(let) + ": failed to create instance!!!!11!");
         }
     }
 
@@ -149,10 +136,10 @@ class HelloTriangleApplication
     void cleanup()
     {
       if (enableValidationLayers) {
-        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+        DestroyDebugUtilsMessengerEXT(instance_, debugMessenger, nullptr);
       }
 
-      vkDestroyInstance(instance, nullptr);
+      vkDestroyInstance(instance_, nullptr);
       glfwDestroyWindow(window);
       glfwTerminate();
     }
@@ -202,11 +189,11 @@ class HelloTriangleApplication
       createInfo.pfnUserCallback = debugCallback;
       createInfo.pUserData = nullptr;
 
-      // if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) !=
-      auto let = CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger);
+      // if (CreateDebugUtilsMessengerEXT(instance_, &createInfo, nullptr, &debugMessenger) !=
+      auto let = CreateDebugUtilsMessengerEXT(instance_, &createInfo, nullptr, &debugMessenger);
           if (let != VK_SUCCESS) {
             std::cout << let << std::endl;
-        throw std::runtime_error("failed to set up debug messenger!!!!11!");
+        throw std::runtime_error(std::to_string(let) + ": failed to set up debug messenger!!!!11!");
       }
     }
 
@@ -217,6 +204,9 @@ class HelloTriangleApplication
       glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
       std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+      // why: for mac code
+      extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 
       if (enableValidationLayers) {
         extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
