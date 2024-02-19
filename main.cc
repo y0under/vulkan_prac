@@ -109,9 +109,13 @@ class HelloTriangleApplication
       createInfo.ppEnabledExtensionNames = requiredGlfwExtensions.data();
       */
 
+      VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
       if (enableValidationLayers) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
+
+        populateDebugMessengerCreateInfo(debugCreateInfo);
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
       }
       else {
         createInfo.enabledLayerCount = 0;
