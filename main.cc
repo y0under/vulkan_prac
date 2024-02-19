@@ -171,11 +171,9 @@ class HelloTriangleApplication
       return true;
     }
 
-    void setupDebugMessenger()
+    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
     {
-      if (!enableValidationLayers) return;
-
-      VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+      createInfo = {};
       createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 
       createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -188,6 +186,14 @@ class HelloTriangleApplication
 
       createInfo.pfnUserCallback = debugCallback;
       createInfo.pUserData = nullptr;
+    }
+
+    void setupDebugMessenger()
+    {
+      if (!enableValidationLayers) return;
+
+      VkDebugUtilsMessengerCreateInfoEXT createInfo;
+      populateDebugMessengerCreateInfo(createInfo);
 
       // if (CreateDebugUtilsMessengerEXT(instance_, &createInfo, nullptr, &debugMessenger) !=
       auto let = CreateDebugUtilsMessengerEXT(instance_, &createInfo, nullptr, &debugMessenger);
@@ -225,6 +231,7 @@ class HelloTriangleApplication
 
       return VK_FALSE;
     }
+
 };
 
 int main()
