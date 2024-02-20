@@ -171,11 +171,6 @@ class HelloTriangleApplication
       // why: for mac code
       createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
-      /*
-      createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredGlfwExtensions.size());
-      createInfo.ppEnabledExtensionNames = requiredGlfwExtensions.data();
-      */
-
       VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
       if (enableValidationLayers) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
