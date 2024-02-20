@@ -70,7 +70,7 @@ class HelloTriangleApplication
       glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
       glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
       // width, height and title
-      window = glfwCreateWindow(kwidth, kheight, "Vulkan", nullptr, nullptr);
+      window = glfwCreateWindow(kwidth, kheight, "Vulkan test", nullptr, nullptr);
     }
 
     void initVulkan()
