@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <cstdlib>
 #include <cstring>
+#include <optional>
 
 #ifdef NDEBUG
     const bool enableValidationLayers = false;
@@ -106,9 +107,34 @@ class HelloTriangleApplication
         throw std::runtime_error("failed to find a suitable GPU!!!!11!");
     }
 
+    struct QueueFamilyIndices
+    {
+      std::optional<uint32_t> graphicsFamily;
+    };
+
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device)
+    {
+      uint32_t queueFamilyCount = 0;
+      vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+      std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+      vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+      QueueFamilyIndices indices;
+
+      int i = 0;
+      for (const auto& queueFamily: queueFamilies) {
+        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+          indices.graphicsFamily = i;
+        ++i;
+      }
+      return indices;
+    }
+
     bool isDeviceSuitabe(VkPhysicalDevice device)
     {
-      return true;
+      QueueFamilyIndices indices = findQueueFamilies(device);
+
+      return indices.graphicsFamily.has_value();
     }
 
     void createInstance()
