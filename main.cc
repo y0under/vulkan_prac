@@ -6,6 +6,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <optional>
+#include <set>
+
+// TODO: when include vulkan.h, delete the definition
+#define VK_MVK_MACOS_SURFACE_EXTENSION_NAME "VK_MVK_macos_surface"
 
 #ifdef NDEBUG
     const bool enableValidationLayers = false;
@@ -66,11 +70,16 @@ class HelloTriangleApplication
     VkDevice device_;
     // for queue handle
     VkQueue graphicsQueue;
+    
+    VkSurfaceKHR surface_;
 
     // functions
+
     void initWindow()
     {
-      glfwInit();
+      if (!glfwInit()){
+        throw std::runtime_error("GLFW not initialized.");
+      }
       glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
       glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
       // width, height and title
@@ -81,28 +90,49 @@ class HelloTriangleApplication
     {
       createInstance();
       setupDebugMessenger();
+      createSurface();
       pickPhysicalDevice();
       createLogicalDevice();
+    }
+
+    void createSurface()
+    {
+      if (!glfwVulkanSupported()) {
+        throw std::runtime_error("Vulkan is not supported!");
+      }
+
+      // if (glfwCreateWindowSurface(instance_, window, nullptr, &surface_) != VK_SUCCESS) {
+      auto ret = glfwCreateWindowSurface(instance_, window, nullptr, &surface_);
+      if (ret != VK_SUCCESS) {
+        throw std::runtime_error(std::to_string(ret) + ": failed to create window surface!!!!11!");
+      }
     }
 
     void createLogicalDevice()
     {
       QueueFamilyIndices indices = findQueueFamilies(physicalDevice_);
 
-      VkDeviceQueueCreateInfo queueCreateInfo{};
-      queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-      queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
-      queueCreateInfo.queueCount = 1;
+      std::vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
+      std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(),
+                                                 indices.presentFamily.value() };
 
       float queuePriority = 1.0f;
-      queueCreateInfo.pQueuePriorities = &queuePriority;
+      for (uint32_t queueFamily: uniqueQueueFamilies) {
+        VkDeviceQueueCreateInfo queueCreateInfo{};
+        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+        queueCreateInfo.queueCount = 1;
+        queueCreateInfo.pQueuePriorities = &queuePriority;
+
+        queueCreateInfos.emplace_back(queueCreateInfo);
+      }
 
       VkPhysicalDeviceFeatures deviceFeatures{};
 
       VkDeviceCreateInfo createInfo{};
       createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-      createInfo.pQueueCreateInfos = &queueCreateInfo;
-      createInfo.queueCreateInfoCount = 1;
+      createInfo.pQueueCreateInfos = queueCreateInfos.data();
+      createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
       createInfo.pEnabledFeatures = &deviceFeatures;
       createInfo.enabledExtensionCount = 0;
 
@@ -151,11 +181,14 @@ class HelloTriangleApplication
 
     struct QueueFamilyIndices
     {
+      // for drawing commands
       std::optional<uint32_t> graphicsFamily;
+      // for presentation
+      std::optional<uint32_t> presentFamily;
 
       bool isComplete()
       {
-        return graphicsFamily.has_value();
+        return graphicsFamily.has_value() && presentFamily.has_value();
       }
     };
 
@@ -172,8 +205,16 @@ class HelloTriangleApplication
       for (const auto& queueFamily: queueFamilies) {
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
           indices.graphicsFamily = i;
+
+        VkBool32 presentSupport = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface_, &presentSupport);
+
+        if (presentSupport)
+          indices.presentFamily = i;
+
         if (indices.isComplete())
           break;
+
         ++i;
       }
       return indices;
@@ -223,7 +264,8 @@ class HelloTriangleApplication
       }
       else {
         createInfo.enabledLayerCount = 0;
-        createInfo.ppEnabledLayerNames = nullptr;
+        // createInfo.ppEnabledLayerNames = nullptr;
+        createInfo.pNext = nullptr;
       }
 
       // if (vkCreateInstance(&createInfo, nullptr, &instance_) != VK_SUCCESS) {
@@ -249,6 +291,7 @@ class HelloTriangleApplication
         DestroyDebugUtilsMessengerEXT(instance_, debugMessenger, nullptr);
       }
 
+      vkDestroySurfaceKHR(instance_, surface_, nullptr);
       vkDestroyInstance(instance_, nullptr);
       glfwDestroyWindow(window);
       glfwTerminate();
@@ -323,6 +366,8 @@ class HelloTriangleApplication
 
       // why: for mac code
       extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+      extensions.emplace_back(VK_KHR_SURFACE_EXTENSION_NAME);
+      extensions.emplace_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
 
       if (enableValidationLayers) {
         extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
