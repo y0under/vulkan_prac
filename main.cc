@@ -12,9 +12,9 @@
 #define VK_MVK_MACOS_SURFACE_EXTENSION_NAME "VK_MVK_macos_surface"
 
 #ifdef NDEBUG
-    const bool enableValidationLayers = false;
+const bool enableValidationLayers = false;
 #else
-    const bool enableValidationLayers = true;
+const bool enableValidationLayers = true;
 #endif
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
                                       const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
@@ -70,7 +70,7 @@ class HelloTriangleApplication
     VkDevice device_;
     // for queue handle
     VkQueue graphicsQueue;
-    
+
     VkSurfaceKHR surface_;
 
     // functions
@@ -114,7 +114,7 @@ class HelloTriangleApplication
 
       std::vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
       std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(),
-                                                 indices.presentFamily.value() };
+        indices.presentFamily.value() };
 
       float queuePriority = 1.0f;
       for (uint32_t queueFamily: uniqueQueueFamilies) {
@@ -230,8 +230,7 @@ class HelloTriangleApplication
     void createInstance()
     {
       // if (enableValidationLayers && !checkValidationLayerSupport()) {
-      auto is_available_validation = enableValidationLayers && !checkValidationLayerSupport();
-      if (is_available_validation){
+      if(enableValidationLayers && !checkValidationLayerSupport()) {
         throw std::runtime_error("validation layers requested, but not available!!!!11!");
       }
 
@@ -270,10 +269,10 @@ class HelloTriangleApplication
 
       // if (vkCreateInstance(&createInfo, nullptr, &instance_) != VK_SUCCESS) {
       auto let = vkCreateInstance(&createInfo, nullptr, &instance_);
-        if (let != VK_SUCCESS) {
-          std::cerr << let << std::endl;
+      if (let != VK_SUCCESS) {
+        std::cerr << let << std::endl;
         throw std::runtime_error(std::to_string(let) + ": failed to create instance!!!!11!");
-        }
+      }
     }
 
     void mainLoop()
@@ -316,7 +315,7 @@ class HelloTriangleApplication
         }
 
         if (!layerFound) {
-          std::cout << "return false" << std::endl;
+          std::cout << "Line: " << __LINE__ <<  " return false" << std::endl;
           return false;
         }
       }
@@ -330,12 +329,12 @@ class HelloTriangleApplication
       createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 
       createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-                                   VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                   VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 
       createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                               VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                               VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 
       createInfo.pfnUserCallback = debugCallback;
       createInfo.pUserData = nullptr;
@@ -350,13 +349,13 @@ class HelloTriangleApplication
 
       // if (CreateDebugUtilsMessengerEXT(instance_, &createInfo, nullptr, &debugMessenger) !=
       auto let = CreateDebugUtilsMessengerEXT(instance_, &createInfo, nullptr, &debugMessenger);
-          if (let != VK_SUCCESS) {
-            std::cout << let << std::endl;
+      if (let != VK_SUCCESS) {
+        std::cout << let << std::endl;
         throw std::runtime_error(std::to_string(let) + ": failed to set up debug messenger!!!!11!");
       }
     }
 
-   std::vector<const char*> getRequiredExtensions()
+    std::vector<const char*> getRequiredExtensions()
     {
       uint32_t glfwExtensionCount = 0;
       const char** glfwExtensions;
@@ -387,19 +386,19 @@ class HelloTriangleApplication
       return VK_FALSE;
     }
 
-};
+    };
 
-int main()
-{
-  HelloTriangleApplication app;
+    int main()
+    {
+      HelloTriangleApplication app;
 
-  try {
-    app.run();
-  }
-  catch (const std::exception& e) {
-    std::cerr << e.what() << std::endl;
-    return EXIT_FAILURE;
-  }
+      try {
+        app.run();
+      }
+      catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
+      }
 
-  return EXIT_SUCCESS;
-}
+      return EXIT_SUCCESS;
+    }
