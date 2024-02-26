@@ -16,6 +16,7 @@ const bool enableValidationLayers = false;
 #else
 const bool enableValidationLayers = true;
 #endif
+
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
                                       const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
                                       const VkAllocationCallbacks* pAllocator,
@@ -97,9 +98,10 @@ class HelloTriangleApplication
 
     void createSurface()
     {
-      if (!glfwVulkanSupported()) {
-        throw std::runtime_error("Vulkan is not supported!");
-      }
+      // return false is is correct.
+      // if (!glfwVulkanSupported()) {
+      //   throw std::runtime_error("Vulkan is not supported!");
+      // }
 
       // if (glfwCreateWindowSurface(instance_, window, nullptr, &surface_) != VK_SUCCESS) {
       auto ret = glfwCreateWindowSurface(instance_, window, nullptr, &surface_);
@@ -360,6 +362,8 @@ class HelloTriangleApplication
       uint32_t glfwExtensionCount = 0;
       const char** glfwExtensions;
       glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+      std::cout << "glfwExtensionCount: " << glfwExtensionCount << "\n";
 
       std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
