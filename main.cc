@@ -199,6 +199,12 @@ class HelloTriangleApplication
       }
     };
 
+    struct SwapChainSupportDetails {
+      VkSurfaceCapabilitiesKHR capabilities;
+      std::vector<VkSurfaceFormatKHR> formats;
+      std::vector<VkPresentModeKHR> presentModes;
+    };
+
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device)
     {
       uint32_t queueFamilyCount = 0;
