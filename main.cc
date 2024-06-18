@@ -205,6 +205,37 @@ class HelloTriangleApplication
       std::vector<VkPresentModeKHR> presentModes;
     };
 
+
+    /**
+     * @brief quering details of swap chain support
+     *
+     * @param device
+     *
+     * @return 
+     */
+    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) {
+      SwapChainSupportDetails details;
+      vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface_, &details.capabilities);
+
+      uint32_t formatCount;
+      vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface_, &formatCount, nullptr);
+
+      if (formatCount != 0) {
+        details.formats.resize(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface_, &formatCount, details.formats.data());
+      }
+
+      uint32_t presentModeCount;
+      vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface_, &presentModeCount, nullptr);
+
+      if (presentModeCount != 0) {
+        details.presentModes.resize(presentModeCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface_, &presentModeCount, details.presentModes.data());
+      }
+
+      return details;
+    }
+
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device)
     {
       uint32_t queueFamilyCount = 0;
@@ -239,7 +270,13 @@ class HelloTriangleApplication
 
       bool extensionsSupported = checkDeviceExtensionSupport(device);
 
-      return indices.isComplete() && extensionsSupported;
+      bool swapChainAdequate = false;
+      if (extensionsSupported) {
+        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+        swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+      }
+
+      return indices.isComplete() && extensionsSupported && swapChainAdequate;
     }
 
     bool checkDeviceExtensionSupport(VkPhysicalDevice device)
