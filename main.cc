@@ -159,8 +159,8 @@ class HelloTriangleApplication
       vkGetDeviceQueue(device_, indices.graphicsFamily.value(), 0, &graphicsQueue);
     }
 
-    /*
-     * select physical device
+    /**
+     * @brief select physical device
      */
     void pickPhysicalDevice()
     {
