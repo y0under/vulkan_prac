@@ -264,12 +264,20 @@ class HelloTriangleApplication
       return indices;
     }
 
+    /**
+     * @brief state of device suitability
+     *
+     * @param device
+     *
+     * @return 
+     */
     bool isDeviceSuitabe(VkPhysicalDevice device)
     {
       QueueFamilyIndices indices = findQueueFamilies(device);
 
       bool extensionsSupported = checkDeviceExtensionSupport(device);
 
+      // for swap chain support
       bool swapChainAdequate = false;
       if (extensionsSupported) {
         SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
