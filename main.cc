@@ -308,9 +308,9 @@ class HelloTriangleApplication
       }
     }
 
-    void mainLoop()
-    {
+    void mainLoop() {
       while (!glfwWindowShouldClose(window)) {
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE)) break;
         glfwPollEvents();
       }
     }
