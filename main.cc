@@ -246,6 +246,23 @@ class HelloTriangleApplication
       return availableFormats[0];
     }
 
+    /**
+     * @brief choose available and most useful
+     *
+     * @param availablePresentModes
+     *
+     * @return 
+     */
+    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+      for (const auto& availablePresentMode : availablePresentModes) {
+        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+          return availablePresentMode;
+        }
+      }
+      return VK_PRESENT_MODE_FIFO_KHR;
+
+    }
+
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device)
     {
       uint32_t queueFamilyCount = 0;
