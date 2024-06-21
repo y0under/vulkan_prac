@@ -17,6 +17,16 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
+/**
+ * @brief 
+ *
+ * @param instance
+ * @param pCreateInfo
+ * @param pAllocator
+ * @param pDebugMessenger
+ *
+ * @return 
+ */
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
     const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
     const VkAllocationCallbacks* pAllocator,
@@ -31,6 +41,13 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
     return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
+/**
+ * @brief 
+ *
+ * @param instance
+ * @param debugMessenger
+ * @param pAllocator
+ */
 void DestroyDebugUtilsMessengerEXT(VkInstance instance,
     VkDebugUtilsMessengerEXT debugMessenger,
     const VkAllocationCallbacks* pAllocator) {
@@ -41,6 +58,9 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
     func(instance, debugMessenger, pAllocator);
 }
 
+/**
+ * @brief 
+ */
 class HelloTriangleApplication {
   public:
     void run() {
@@ -63,6 +83,9 @@ class HelloTriangleApplication {
       }
     };
 
+    /**
+     * @brief 
+     */
     struct SwapChainSupportDetails {
       VkSurfaceCapabilitiesKHR capabilities;
       std::vector<VkSurfaceFormatKHR> formats;
@@ -94,6 +117,9 @@ class HelloTriangleApplication {
 
     // functions
 
+    /**
+     * @brief init glfw
+     */
     void initWindow() {
       if (!glfwInit()){
         throw std::runtime_error("GLFW not initialized.");
@@ -104,6 +130,9 @@ class HelloTriangleApplication {
       window = glfwCreateWindow(kwidth, kheight, "Vulkan test", nullptr, nullptr);
     }
 
+    /**
+     * @brief init the app
+     */
     void initVulkan() {
       createInstance();
       setupDebugMessenger();
@@ -112,6 +141,9 @@ class HelloTriangleApplication {
       createLogicalDevice();
     }
 
+    /**
+     * @brief create glfw window
+     */
     void createSurface() {
       // return false is is correct.
       // if (!glfwVulkanSupported()) {
@@ -125,6 +157,9 @@ class HelloTriangleApplication {
       }
     }
 
+    /**
+     * @brief 
+     */
     void createLogicalDevice() {
       QueueFamilyIndices indices = findQueueFamilies(physicalDevice_);
 
@@ -226,6 +261,13 @@ class HelloTriangleApplication {
       return details;
     }
 
+    /**
+     * @brief 
+     *
+     * @param availableFormats
+     *
+     * @return 
+     */
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
       for (const auto& availableFormat : availableFormats) {
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -279,6 +321,13 @@ class HelloTriangleApplication {
       }
     }
 
+    /**
+     * @brief 
+     *
+     * @param device
+     *
+     * @return 
+     */
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
       uint32_t queueFamilyCount = 0;
       vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -328,6 +377,13 @@ class HelloTriangleApplication {
       return indices.isComplete() && extensionsSupported && swapChainAdequate;
     }
 
+    /**
+     * @brief 
+     *
+     * @param device
+     *
+     * @return 
+     */
     bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
       uint32_t extensionCount;
       vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
@@ -345,6 +401,9 @@ class HelloTriangleApplication {
       return requiredExtensions.empty();
     }
 
+    /**
+     * @brief 
+     */
     void createInstance() {
       // if (enableValidationLayers && !checkValidationLayerSupport()) {
       if(enableValidationLayers && !checkValidationLayerSupport()) {
@@ -392,6 +451,9 @@ class HelloTriangleApplication {
       }
     }
 
+    /**
+     * @brief 
+     */
     void mainLoop() {
       while (!glfwWindowShouldClose(window)) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE)) break;
@@ -399,6 +461,9 @@ class HelloTriangleApplication {
       }
     }
 
+    /**
+     * @brief destruct the app
+     */
     void cleanup() {
       vkDestroyDevice(device_, nullptr);
 
@@ -412,6 +477,11 @@ class HelloTriangleApplication {
       glfwTerminate();
     }
 
+    /**
+     * @brief 
+     *
+     * @return 
+     */
     bool checkValidationLayerSupport() {
       uint32_t layerCount;
       vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -438,6 +508,11 @@ class HelloTriangleApplication {
       return true;
     }
 
+    /**
+     * @brief 
+     *
+     * @param createInfo
+     */
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
       createInfo = {};
       createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -454,6 +529,9 @@ class HelloTriangleApplication {
       createInfo.pUserData = nullptr;
     }
 
+    /**
+     * @brief 
+     */
     void setupDebugMessenger() {
       if (!enableValidationLayers) return;
 
@@ -468,6 +546,11 @@ class HelloTriangleApplication {
       }
     }
 
+    /**
+     * @brief 
+     *
+     * @return 
+     */
     std::vector<const char*> getRequiredExtensions() {
       uint32_t glfwExtensionCount = 0;
       const char** glfwExtensions;
@@ -489,6 +572,16 @@ class HelloTriangleApplication {
       return extensions;
     }
 
+    /**
+     * @brief 
+     *
+     * @param messageSeverity
+     * @param messageType
+     * @param pCallbackData
+     * @param pUserData
+     *
+     * @return 
+     */
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
