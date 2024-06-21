@@ -115,6 +115,12 @@ class HelloTriangleApplication {
 
     VkSurfaceKHR surface_;
 
+    VkSwapchainKHR swap_chain_;
+    // for keep VkImage handler
+    std::vector<VkImage> swap_chain_images_;
+    VkFormat swap_chain_image_format_;
+    VkExtent2D swap_chain_extent_;
+
     // functions
 
     /**
@@ -139,6 +145,74 @@ class HelloTriangleApplication {
       createSurface();
       pickPhysicalDevice();
       createLogicalDevice();
+      createSwapChain();
+    }
+
+    /**
+     * @brief 
+     */
+    void createInstance() {
+      // if (enableValidationLayers && !checkValidationLayerSupport()) {
+      if(enableValidationLayers && !checkValidationLayerSupport()) {
+        throw std::runtime_error("validation layers requested, but not available!!!!11!");
+      }
+
+      VkApplicationInfo appInfo{};
+      appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+      appInfo.pApplicationName = "Hello Triangle";
+      appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+      appInfo.pEngineName = "No Engine";
+      appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+      appInfo.apiVersion = VK_API_VERSION_1_0;
+
+      VkInstanceCreateInfo createInfo{};
+      createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+      createInfo.pApplicationInfo = &appInfo;
+
+      auto extensions = getRequiredExtensions();
+      createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+      createInfo.ppEnabledExtensionNames = extensions.data();
+
+      // why: for mac code
+      createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+
+      VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+      if (enableValidationLayers) {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+
+        populateDebugMessengerCreateInfo(debugCreateInfo);
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
+      }
+      else {
+        createInfo.enabledLayerCount = 0;
+        // createInfo.ppEnabledLayerNames = nullptr;
+        createInfo.pNext = nullptr;
+      }
+
+      // if (vkCreateInstance(&createInfo, nullptr, &instance_) != VK_SUCCESS) {
+      auto let = vkCreateInstance(&createInfo, nullptr, &instance_);
+      if (let != VK_SUCCESS) {
+        std::cerr << let << std::endl;
+        throw std::runtime_error(std::to_string(let) + ": failed to create instance!!!!11!");
+      }
+    }
+
+    /**
+     * @brief 
+     */
+    void setupDebugMessenger() {
+      if (!enableValidationLayers) return;
+
+      VkDebugUtilsMessengerCreateInfoEXT createInfo;
+      populateDebugMessengerCreateInfo(createInfo);
+
+      // if (CreateDebugUtilsMessengerEXT(instance_, &createInfo, nullptr, &debugMessenger) !=
+      auto let = CreateDebugUtilsMessengerEXT(instance_, &createInfo, nullptr, &debugMessenger);
+      if (let != VK_SUCCESS) {
+        std::cout << let << std::endl;
+        throw std::runtime_error(std::to_string(let) + ": failed to set up debug messenger!!!!11!");
+      }
     }
 
     /**
@@ -155,6 +229,32 @@ class HelloTriangleApplication {
       if (ret != VK_SUCCESS) {
         throw std::runtime_error(std::to_string(ret) + ": failed to create window surface!!!!11!");
       }
+    }
+
+    /**
+     * @brief select physical device
+     */
+    void pickPhysicalDevice() {
+      uint32_t deviceCount = 0;
+      // check devices
+      vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
+      if (deviceCount == 0)
+        throw std::runtime_error("failed to find GPUs with Vulkan support!!!!11!");
+
+      std::vector<VkPhysicalDevice> devices(deviceCount);
+      // set devices to vector
+      vkEnumeratePhysicalDevices(instance_, &deviceCount, devices.data());
+
+      for (const auto& device: devices) {
+        // pick first available device
+        if (isDeviceSuitabe(device)) {
+          physicalDevice_ = device;
+          break;
+        }
+      }
+
+      if (physicalDevice_ == VK_NULL_HANDLE)
+        throw std::runtime_error("failed to find a suitable GPU!!!!11!");
     }
 
     /**
@@ -205,31 +305,66 @@ class HelloTriangleApplication {
     }
 
     /**
-     * @brief select physical device
+     * @brief 
      */
-    void pickPhysicalDevice() {
-      uint32_t deviceCount = 0;
-      // check devices
-      vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
-      if (deviceCount == 0)
-        throw std::runtime_error("failed to find GPUs with Vulkan support!!!!11!");
+    void createSwapChain() {
+      SwapChainSupportDetails swap_chain_support = querySwapChainSupport(physicalDevice_);
 
-      std::vector<VkPhysicalDevice> devices(deviceCount);
-      // set devices to vector
-      vkEnumeratePhysicalDevices(instance_, &deviceCount, devices.data());
+      VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swap_chain_support.formats);
+      VkPresentModeKHR presentMode = chooseSwapPresentMode(swap_chain_support.presentModes);
+      VkExtent2D extent = chooseSwapExtent(swap_chain_support.capabilities);
 
-      for (const auto& device: devices) {
-        // pick first available device
-        if (isDeviceSuitabe(device)) {
-          physicalDevice_ = device;
-          break;
-        }
+      // why: +1 for performance
+      uint32_t image_count = swap_chain_support.capabilities.minImageCount + 1;
+      if (0 < swap_chain_support.capabilities.maxImageCount &&
+          swap_chain_support.capabilities.maxImageCount < image_count) {
+        image_count = swap_chain_support.capabilities.maxImageCount;
       }
 
-      if (physicalDevice_ == VK_NULL_HANDLE)
-        throw std::runtime_error("failed to find a suitable GPU!!!!11!");
-    }
+      VkSwapchainCreateInfoKHR createInfo{};
+      createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+      createInfo.surface = surface_;
 
+      createInfo.minImageCount = image_count;
+      createInfo.imageFormat = surfaceFormat.format;
+      createInfo.imageColorSpace = surfaceFormat.colorSpace;
+      createInfo.imageExtent = extent;
+      // why: 1 means unless developing a stereoscopic 3D application
+      createInfo.imageArrayLayers = 1;
+      createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+      QueueFamilyIndices indices = findQueueFamilies(physicalDevice_);
+      uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+
+      if (indices.graphicsFamily != indices.presentFamily) {
+        createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+        createInfo.queueFamilyIndexCount = 2;
+        createInfo.pQueueFamilyIndices = queueFamilyIndices;
+      } else {
+        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        createInfo.queueFamilyIndexCount = 0;
+        createInfo.pQueueFamilyIndices = nullptr;
+      }
+
+      createInfo.preTransform = swap_chain_support.capabilities.currentTransform;
+      createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+      createInfo.presentMode = presentMode;
+      createInfo.clipped = VK_TRUE;
+
+      // TODO: recreate swapchain
+      createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+      if (vkCreateSwapchainKHR(device_, &createInfo, nullptr, &swap_chain_) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create swap chain!");
+      }
+
+      vkGetSwapchainImagesKHR(device_, swap_chain_, &image_count, nullptr);
+      swap_chain_images_.resize(image_count);
+      vkGetSwapchainImagesKHR(device_, swap_chain_, &image_count, swap_chain_images_.data());
+
+      swap_chain_image_format_ = surfaceFormat.format;
+      swap_chain_extent_ = extent;
+    }
 
     /**
      * @brief quering details of swap chain support
@@ -370,8 +505,8 @@ class HelloTriangleApplication {
       // for swap chain support
       bool swapChainAdequate = false;
       if (extensionsSupported) {
-        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
-        swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+        SwapChainSupportDetails swap_chain_support = querySwapChainSupport(device);
+        swapChainAdequate = !swap_chain_support.formats.empty() && !swap_chain_support.presentModes.empty();
       }
 
       return indices.isComplete() && extensionsSupported && swapChainAdequate;
@@ -401,55 +536,6 @@ class HelloTriangleApplication {
       return requiredExtensions.empty();
     }
 
-    /**
-     * @brief 
-     */
-    void createInstance() {
-      // if (enableValidationLayers && !checkValidationLayerSupport()) {
-      if(enableValidationLayers && !checkValidationLayerSupport()) {
-        throw std::runtime_error("validation layers requested, but not available!!!!11!");
-      }
-
-      VkApplicationInfo appInfo{};
-      appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-      appInfo.pApplicationName = "Hello Triangle";
-      appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-      appInfo.pEngineName = "No Engine";
-      appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-      appInfo.apiVersion = VK_API_VERSION_1_0;
-
-      VkInstanceCreateInfo createInfo{};
-      createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-      createInfo.pApplicationInfo = &appInfo;
-
-      auto extensions = getRequiredExtensions();
-      createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-      createInfo.ppEnabledExtensionNames = extensions.data();
-
-      // why: for mac code
-      createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-
-      VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-      if (enableValidationLayers) {
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
-
-        populateDebugMessengerCreateInfo(debugCreateInfo);
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
-      }
-      else {
-        createInfo.enabledLayerCount = 0;
-        // createInfo.ppEnabledLayerNames = nullptr;
-        createInfo.pNext = nullptr;
-      }
-
-      // if (vkCreateInstance(&createInfo, nullptr, &instance_) != VK_SUCCESS) {
-      auto let = vkCreateInstance(&createInfo, nullptr, &instance_);
-      if (let != VK_SUCCESS) {
-        std::cerr << let << std::endl;
-        throw std::runtime_error(std::to_string(let) + ": failed to create instance!!!!11!");
-      }
-    }
 
     /**
      * @brief 
@@ -465,6 +551,7 @@ class HelloTriangleApplication {
      * @brief destruct the app
      */
     void cleanup() {
+      vkDestroySwapchainKHR(device_, swap_chain_, nullptr);
       vkDestroyDevice(device_, nullptr);
 
       if (enableValidationLayers) {
@@ -527,23 +614,6 @@ class HelloTriangleApplication {
 
       createInfo.pfnUserCallback = debugCallback;
       createInfo.pUserData = nullptr;
-    }
-
-    /**
-     * @brief 
-     */
-    void setupDebugMessenger() {
-      if (!enableValidationLayers) return;
-
-      VkDebugUtilsMessengerCreateInfoEXT createInfo;
-      populateDebugMessengerCreateInfo(createInfo);
-
-      // if (CreateDebugUtilsMessengerEXT(instance_, &createInfo, nullptr, &debugMessenger) !=
-      auto let = CreateDebugUtilsMessengerEXT(instance_, &createInfo, nullptr, &debugMessenger);
-      if (let != VK_SUCCESS) {
-        std::cout << let << std::endl;
-        throw std::runtime_error(std::to_string(let) + ": failed to set up debug messenger!!!!11!");
-      }
     }
 
     /**
