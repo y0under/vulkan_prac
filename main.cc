@@ -18,10 +18,9 @@ const bool enableValidationLayers = true;
 #endif
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
-                                      const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-                                      const VkAllocationCallbacks* pAllocator,
-                                      VkDebugUtilsMessengerEXT* pDebugMessenger)
-{
+    const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+    const VkAllocationCallbacks* pAllocator,
+    VkDebugUtilsMessengerEXT* pDebugMessenger) {
   auto func =
     (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
         instance,"vkCreateDebugUtilsMessengerEXT");
@@ -32,11 +31,9 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
     return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
-
 void DestroyDebugUtilsMessengerEXT(VkInstance instance,
-                                   VkDebugUtilsMessengerEXT debugMessenger,
-                                   const VkAllocationCallbacks* pAllocator)
-{
+    VkDebugUtilsMessengerEXT debugMessenger,
+    const VkAllocationCallbacks* pAllocator) {
   auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
       instance, "vkDestroyDebugUtilsMessengerEXT");
 
@@ -44,17 +41,34 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
     func(instance, debugMessenger, pAllocator);
 }
 
-class HelloTriangleApplication
-{
+class HelloTriangleApplication {
   public:
-    void run()
-    {
+    void run() {
       initWindow();
       initVulkan();
       mainLoop();
       cleanup();
     }
   private:
+    // struct
+    struct QueueFamilyIndices {
+      // for drawing commands
+      std::optional<uint32_t> graphicsFamily;
+      // for presentation
+      std::optional<uint32_t> presentFamily;
+
+      bool isComplete()
+      {
+        return graphicsFamily.has_value() && presentFamily.has_value();
+      }
+    };
+
+    struct SwapChainSupportDetails {
+      VkSurfaceCapabilitiesKHR capabilities;
+      std::vector<VkSurfaceFormatKHR> formats;
+      std::vector<VkPresentModeKHR> presentModes;
+    };
+
     // values
     const uint32_t kwidth = 800;
     const uint32_t kheight = 600;
@@ -80,8 +94,7 @@ class HelloTriangleApplication
 
     // functions
 
-    void initWindow()
-    {
+    void initWindow() {
       if (!glfwInit()){
         throw std::runtime_error("GLFW not initialized.");
       }
@@ -91,8 +104,7 @@ class HelloTriangleApplication
       window = glfwCreateWindow(kwidth, kheight, "Vulkan test", nullptr, nullptr);
     }
 
-    void initVulkan()
-    {
+    void initVulkan() {
       createInstance();
       setupDebugMessenger();
       createSurface();
@@ -100,8 +112,7 @@ class HelloTriangleApplication
       createLogicalDevice();
     }
 
-    void createSurface()
-    {
+    void createSurface() {
       // return false is is correct.
       // if (!glfwVulkanSupported()) {
       //   throw std::runtime_error("Vulkan is not supported!");
@@ -114,8 +125,7 @@ class HelloTriangleApplication
       }
     }
 
-    void createLogicalDevice()
-    {
+    void createLogicalDevice() {
       QueueFamilyIndices indices = findQueueFamilies(physicalDevice_);
 
       std::vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
@@ -162,8 +172,7 @@ class HelloTriangleApplication
     /**
      * @brief select physical device
      */
-    void pickPhysicalDevice()
-    {
+    void pickPhysicalDevice() {
       uint32_t deviceCount = 0;
       // check devices
       vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
@@ -185,25 +194,6 @@ class HelloTriangleApplication
       if (physicalDevice_ == VK_NULL_HANDLE)
         throw std::runtime_error("failed to find a suitable GPU!!!!11!");
     }
-
-    struct QueueFamilyIndices
-    {
-      // for drawing commands
-      std::optional<uint32_t> graphicsFamily;
-      // for presentation
-      std::optional<uint32_t> presentFamily;
-
-      bool isComplete()
-      {
-        return graphicsFamily.has_value() && presentFamily.has_value();
-      }
-    };
-
-    struct SwapChainSupportDetails {
-      VkSurfaceCapabilitiesKHR capabilities;
-      std::vector<VkSurfaceFormatKHR> formats;
-      std::vector<VkPresentModeKHR> presentModes;
-    };
 
 
     /**
@@ -286,11 +276,10 @@ class HelloTriangleApplication
         actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
         return actualExtent;
-    }
+      }
     }
 
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device)
-    {
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
       uint32_t queueFamilyCount = 0;
       vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
       std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
@@ -324,8 +313,7 @@ class HelloTriangleApplication
      *
      * @return 
      */
-    bool isDeviceSuitabe(VkPhysicalDevice device)
-    {
+    bool isDeviceSuitabe(VkPhysicalDevice device) {
       QueueFamilyIndices indices = findQueueFamilies(device);
 
       bool extensionsSupported = checkDeviceExtensionSupport(device);
@@ -340,8 +328,7 @@ class HelloTriangleApplication
       return indices.isComplete() && extensionsSupported && swapChainAdequate;
     }
 
-    bool checkDeviceExtensionSupport(VkPhysicalDevice device)
-    {
+    bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
       uint32_t extensionCount;
       vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -358,8 +345,7 @@ class HelloTriangleApplication
       return requiredExtensions.empty();
     }
 
-    void createInstance()
-    {
+    void createInstance() {
       // if (enableValidationLayers && !checkValidationLayerSupport()) {
       if(enableValidationLayers && !checkValidationLayerSupport()) {
         throw std::runtime_error("validation layers requested, but not available!!!!11!");
@@ -413,8 +399,7 @@ class HelloTriangleApplication
       }
     }
 
-    void cleanup()
-    {
+    void cleanup() {
       vkDestroyDevice(device_, nullptr);
 
       if (enableValidationLayers) {
@@ -427,8 +412,7 @@ class HelloTriangleApplication
       glfwTerminate();
     }
 
-    bool checkValidationLayerSupport()
-    {
+    bool checkValidationLayerSupport() {
       uint32_t layerCount;
       vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -454,8 +438,7 @@ class HelloTriangleApplication
       return true;
     }
 
-    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
-    {
+    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
       createInfo = {};
       createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 
@@ -471,8 +454,7 @@ class HelloTriangleApplication
       createInfo.pUserData = nullptr;
     }
 
-    void setupDebugMessenger()
-    {
+    void setupDebugMessenger() {
       if (!enableValidationLayers) return;
 
       VkDebugUtilsMessengerCreateInfoEXT createInfo;
@@ -486,8 +468,7 @@ class HelloTriangleApplication
       }
     }
 
-    std::vector<const char*> getRequiredExtensions()
-    {
+    std::vector<const char*> getRequiredExtensions() {
       uint32_t glfwExtensionCount = 0;
       const char** glfwExtensions;
       glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -512,26 +493,23 @@ class HelloTriangleApplication
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-        void* pUserData)
-    {
+        void* pUserData) {
       std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
       return VK_FALSE;
     }
+};
 
-    };
+int main() {
+  HelloTriangleApplication app;
 
-    int main()
-    {
-      HelloTriangleApplication app;
+  try {
+    app.run();
+  }
+  catch (const std::exception& e) {
+    std::cerr << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
 
-      try {
-        app.run();
-      }
-      catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
-        return EXIT_FAILURE;
-      }
-
-      return EXIT_SUCCESS;
-    }
+  return EXIT_SUCCESS;
+}
