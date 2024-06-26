@@ -1,12 +1,13 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <iostream>
-#include <stdexcept>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
+#include <iostream>
 #include <optional>
 #include <set>
+#include <stdexcept>
 
 // TODO: when include vulkan.h, delete the definition
 #define VK_MVK_MACOS_SURFACE_EXTENSION_NAME "VK_MVK_macos_surface"
@@ -698,6 +699,29 @@ class HelloTriangleApplication {
       std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
       return VK_FALSE;
+    }
+
+    /**
+     * @brief for load shader
+     *
+     * @param file_name
+     *
+     * @return 
+     */
+    static std::vector<char> ReadFile(const std::string &file_name) {
+      std::ifstream file(file_name, std::ios::ate | std::ios::binary);
+
+      if (!file.is_open()) {
+        throw std::runtime_error("failed to open file!");
+      }
+
+      size_t fileSize = (size_t) file.tellg();
+      std::vector<char> buffer(fileSize);
+      file.seekg(0);
+      file.read(buffer.data(), fileSize);
+      file.close();
+
+      return buffer;
     }
 };
 
