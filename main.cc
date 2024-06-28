@@ -408,6 +408,8 @@ class HelloTriangleApplication {
       auto vertShaderModule = createShaderModule(vertShaderCode);
       auto fragShaderModule = createShaderModule(fragShaderCode);
 
+      vkDestroyShaderModule(device_, fragShaderModule, nullptr);
+      vkDestroyShaderModule(device_, vertShaderModule, nullptr);
     }
 
 
