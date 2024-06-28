@@ -402,14 +402,29 @@ class HelloTriangleApplication {
      * @brief 
      */
     void createGraphicsPipeline() {
-      auto vertShaderCode = ReadFile("shader/vert.spv");
-      auto fragShaderCode = ReadFile("shader/frag.spv");
+      auto vert_shader_code = ReadFile("shader/vert.spv");
+      auto frag_shader_code = ReadFile("shader/frag.spv");
 
-      auto vertShaderModule = createShaderModule(vertShaderCode);
-      auto fragShaderModule = createShaderModule(fragShaderCode);
+      auto vert_shader_module = createShaderModule(vert_shader_code);
+      auto frag_shader_module = createShaderModule(frag_shader_code);
 
-      vkDestroyShaderModule(device_, fragShaderModule, nullptr);
-      vkDestroyShaderModule(device_, vertShaderModule, nullptr);
+      vkDestroyShaderModule(device_, frag_shader_module, nullptr);
+      vkDestroyShaderModule(device_, vert_shader_module, nullptr);
+
+      VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
+      vert_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+      vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+
+      vert_shader_stage_info.module = vert_shader_module;
+      vert_shader_stage_info.pName = "main";
+
+      VkPipelineShaderStageCreateInfo frag_shader_stage_info{};
+      frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+      frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+      frag_shader_stage_info.module = frag_shader_module;
+      frag_shader_stage_info.pName = "main";
+
+      VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_stage_info, frag_shader_stage_info};
     }
 
 
