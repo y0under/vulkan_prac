@@ -404,6 +404,10 @@ class HelloTriangleApplication {
     void createGraphicsPipeline() {
       auto vertShaderCode = ReadFile("shader/vert.spv");
       auto fragShaderCode = ReadFile("shader/frag.spv");
+
+      auto vertShaderModule = createShaderModule(vertShaderCode);
+      auto fragShaderModule = createShaderModule(fragShaderCode);
+
     }
 
 
