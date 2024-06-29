@@ -224,10 +224,10 @@ class HelloTriangleApplication {
      * @brief create glfw window
      */
     void createSurface() {
-      // return false is is correct.
-      // if (!glfwVulkanSupported()) {
-      //   throw std::runtime_error("Vulkan is not supported!");
-      // }
+      // error case: if vulkan is not supported.
+      if (!glfwVulkanSupported()) {
+        throw std::runtime_error("Vulkan is not supported!");
+      }
 
       // if (glfwCreateWindowSurface(instance_, window, nullptr, &surface_) != VK_SUCCESS) {
       auto ret = glfwCreateWindowSurface(instance_, window, nullptr, &surface_);
