@@ -124,6 +124,8 @@ class HelloTriangleApplication {
 
     std::vector<VkImageView> swap_chain_image_views_;
 
+    VkPipelineLayout pipeline_layout_;
+
     // functions
 
     /**
@@ -408,9 +410,6 @@ class HelloTriangleApplication {
       auto vert_shader_module = createShaderModule(vert_shader_code);
       auto frag_shader_module = createShaderModule(frag_shader_code);
 
-      vkDestroyShaderModule(device_, frag_shader_module, nullptr);
-      vkDestroyShaderModule(device_, vert_shader_module, nullptr);
-
       VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
       vert_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
       vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -457,6 +456,20 @@ class HelloTriangleApplication {
       auto multisampling = GenerateMultisampling();
       auto color_blend_attachment = GenerateColorBlendAttachment();
       auto color_blending = GenerateColorBlending(color_blend_attachment);
+
+      VkPipelineLayoutCreateInfo pipeline_layout_info{};
+      pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+      pipeline_layout_info.setLayoutCount = 0;
+      pipeline_layout_info.pSetLayouts = nullptr;
+      pipeline_layout_info.pushConstantRangeCount = 0;
+      pipeline_layout_info.pPushConstantRanges = nullptr;
+
+      if (vkCreatePipelineLayout(device_, &pipeline_layout_info, nullptr, &pipeline_layout_) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create pipeline layout!");
+      }
+
+      vkDestroyShaderModule(device_, frag_shader_module, nullptr);
+      vkDestroyShaderModule(device_, vert_shader_module, nullptr);
     }
 
     /**
@@ -767,6 +780,7 @@ class HelloTriangleApplication {
      * @brief destruct the app
      */
     void cleanup() {
+      vkDestroyPipelineLayout(device_, pipeline_layout_, nullptr);
       vkDestroySwapchainKHR(device_, swap_chain_, nullptr);
       vkDestroyDevice(device_, nullptr);
 
