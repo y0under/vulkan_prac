@@ -456,7 +456,16 @@ class HelloTriangleApplication {
       auto rasterizer = GenerateRasterizer();
       auto multisampling = GenerateMultisampling();
       auto color_blend_attachment = GenerateColorBlendAttachment();
+      auto color_blending = GenerateColorBlending(color_blend_attachment);
+    }
 
+    /**
+     * @brief setting for global color blending
+     *
+     * @return 
+     */
+    VkPipelineColorBlendStateCreateInfo GenerateColorBlending(
+        VkPipelineColorBlendAttachmentState &color_blend_attachment) {
       VkPipelineColorBlendStateCreateInfo color_blending{};
       color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
       color_blending.logicOpEnable = VK_FALSE;
@@ -467,6 +476,7 @@ class HelloTriangleApplication {
       color_blending.blendConstants[1] = 0.0f;
       color_blending.blendConstants[2] = 0.0f;
       color_blending.blendConstants[3] = 0.0f;
+      return color_blending;
     }
 
     /**
