@@ -456,13 +456,7 @@ class HelloTriangleApplication {
       auto multisampling = GenerateMultisampling();
       auto color_blend_attachment = GenerateColorBlendAttachment();
       auto color_blending = GenerateColorBlending(color_blend_attachment);
-
-      VkPipelineLayoutCreateInfo pipeline_layout_info{};
-      pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-      pipeline_layout_info.setLayoutCount = 0;
-      pipeline_layout_info.pSetLayouts = nullptr;
-      pipeline_layout_info.pushConstantRangeCount = 0;
-      pipeline_layout_info.pPushConstantRanges = nullptr;
+      auto pipeline_layout_info = GeneratePipelineLayoutInfo();
 
       if (vkCreatePipelineLayout(device_, &pipeline_layout_info, nullptr, &pipeline_layout_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
@@ -470,6 +464,21 @@ class HelloTriangleApplication {
 
       vkDestroyShaderModule(device_, frag_shader_module, nullptr);
       vkDestroyShaderModule(device_, vert_shader_module, nullptr);
+    }
+
+    /**
+     * @brief for to use uniform variable in shader
+     *
+     * @return 
+     */
+    VkPipelineLayoutCreateInfo GeneratePipelineLayoutInfo() {
+      VkPipelineLayoutCreateInfo pipeline_layout_info{};
+      pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+      pipeline_layout_info.setLayoutCount = 0;
+      pipeline_layout_info.pSetLayouts = nullptr;
+      pipeline_layout_info.pushConstantRangeCount = 0;
+      pipeline_layout_info.pPushConstantRanges = nullptr;
+      return pipeline_layout_info;
     }
 
     /**
