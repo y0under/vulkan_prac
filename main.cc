@@ -441,12 +441,44 @@ class HelloTriangleApplication {
       dynamic_state.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
       dynamic_state.pDynamicStates = dynamic_states.data();
 
-      VkPipelineViewportStateCreateInfo viewportState{};
-      viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-      viewportState.viewportCount = 1;
-      viewportState.scissorCount = 1;
+      VkPipelineViewportStateCreateInfo viewport_state{};
+      viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+      viewport_state.viewportCount = 1;
+      // what: for static viewport
+      // auto viewport = GenerateViewport();
+      // viewport_state.pViewports = &viewport;
+      viewport_state.scissorCount = 1;
+      // what: for static scissor
+      // auto scissor = GenerateScissor();
+      // viewport_state.pScissors = &scissor;
     }
 
+    /**
+     * @brief setting for static viewport
+     *
+     * @return 
+     */
+    VkViewport GenerateViewport() {
+      VkViewport viewport{};
+      viewport.x = 0.0f;
+      viewport.y = 0.0f;
+      viewport.width = (float) swap_chain_extent_.width;
+      viewport.height = (float) swap_chain_extent_.height;
+      viewport.minDepth = 0.0f;
+      viewport.maxDepth = 1.0f;
+
+      return viewport;
+    }
+
+    /**
+     * @brief setting for static scissor
+     */
+    VkRect2D GenerateScissor() {
+      VkRect2D scissor{};
+      scissor.offset = {0, 0};
+      scissor.extent = swap_chain_extent_;
+      return scissor;
+    }
 
     /**
      * @brief 
