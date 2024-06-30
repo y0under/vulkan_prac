@@ -454,17 +454,14 @@ class HelloTriangleApplication {
 
 
       auto rasterizer = GenerateRasterizer();
-
-      VkPipelineMultisampleStateCreateInfo multisampling{};
-      multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-      multisampling.sampleShadingEnable = VK_FALSE;
-      multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-      multisampling.minSampleShading = 1.0f;
-      multisampling.pSampleMask = nullptr;
-      multisampling.alphaToCoverageEnable = VK_FALSE;
-      multisampling.alphaToOneEnable = VK_FALSE;
+      auto multisampling = GenerateMultisampling();
     }
 
+    /**
+     * @brief 
+     *
+     * @return 
+     */
     VkPipelineRasterizationStateCreateInfo GenerateRasterizer() {
       VkPipelineRasterizationStateCreateInfo rasterizer{};
       rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -478,6 +475,23 @@ class HelloTriangleApplication {
       rasterizer.depthBiasClamp = 0.0f;
       rasterizer.depthBiasSlopeFactor = 0.0f;
       return rasterizer;
+    }
+
+    /**
+     * @brief for anti-aliasing
+     *
+     * @return 
+     */
+    VkPipelineMultisampleStateCreateInfo GenerateMultisampling() {
+      VkPipelineMultisampleStateCreateInfo multisampling{};
+      multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+      multisampling.sampleShadingEnable = VK_FALSE;
+      multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+      multisampling.minSampleShading = 1.0f;
+      multisampling.pSampleMask = nullptr;
+      multisampling.alphaToCoverageEnable = VK_FALSE;
+      multisampling.alphaToOneEnable = VK_FALSE;
+      return multisampling;
     }
 
     /**
