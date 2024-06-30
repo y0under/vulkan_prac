@@ -440,6 +440,11 @@ class HelloTriangleApplication {
       dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
       dynamic_state.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
       dynamic_state.pDynamicStates = dynamic_states.data();
+
+      VkPipelineViewportStateCreateInfo viewportState{};
+      viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+      viewportState.viewportCount = 1;
+      viewportState.scissorCount = 1;
     }
 
 
