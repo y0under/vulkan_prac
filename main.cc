@@ -152,6 +152,7 @@ class HelloTriangleApplication {
       createLogicalDevice();
       createSwapChain();
       createImageViews();
+      createRenderPass();
       createGraphicsPipeline();
     }
 
@@ -602,6 +603,9 @@ class HelloTriangleApplication {
       }
 
       return shaderModule;
+    }
+
+    void createRenderPass() {
     }
 
     /**
