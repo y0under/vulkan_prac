@@ -402,6 +402,9 @@ class HelloTriangleApplication {
       }
     }
 
+    /**
+     * @brief 
+     */
     void createRenderPass() {
       VkAttachmentDescription color_attachment{};
       color_attachment.format = swap_chain_image_format_;
