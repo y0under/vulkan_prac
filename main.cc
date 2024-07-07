@@ -158,6 +158,7 @@ class HelloTriangleApplication {
       createImageViews();
       createRenderPass();
       createGraphicsPipeline();
+      createFrame
     }
 
     /**
@@ -674,6 +675,13 @@ class HelloTriangleApplication {
       }
 
       return shaderModule;
+    }
+
+    /**
+     * @brief 
+     */
+    void createFramebuffers() {
+
     }
 
     /**
