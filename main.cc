@@ -888,6 +888,9 @@ class HelloTriangleApplication {
      * @brief destruct the app
      */
     void cleanup() {
+      for (auto buffer : swap_chain_framebuffers_) {
+        vkDestroyFramebuffer(device_, buffer, nullptr);
+      }
       vkDestroyPipeline(device_, graphics_pipeline_, nullptr);
       vkDestroyPipelineLayout(device_, pipeline_layout_, nullptr);
       vkDestroyRenderPass(device_, render_pass_, nullptr);
