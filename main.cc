@@ -123,6 +123,8 @@ class HelloTriangleApplication {
     VkExtent2D swap_chain_extent_;
 
     std::vector<VkImageView> swap_chain_image_views_;
+    // baffer per image
+    std::vector<VkFramebuffer> swap_chain_framebuffers_;
 
     VkRenderPass render_pass_;
     VkPipelineLayout pipeline_layout_;
