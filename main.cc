@@ -158,7 +158,7 @@ class HelloTriangleApplication {
       createImageViews();
       createRenderPass();
       createGraphicsPipeline();
-      createFrame
+      createFramebuffers();
     }
 
     /**
@@ -681,7 +681,26 @@ class HelloTriangleApplication {
      * @brief 
      */
     void createFramebuffers() {
+      swap_chain_framebuffers_.resize(swap_chain_image_views_.size());
 
+      for (size_t i = 0; i < swap_chain_image_views_.size(); ++i) {
+        VkImageView attachments[] = {
+          swap_chain_image_views_[i]
+        };
+
+        VkFramebufferCreateInfo framebuffer_info{};
+        framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebuffer_info.renderPass = render_pass_;
+        framebuffer_info.attachmentCount = 1;
+        framebuffer_info.pAttachments = attachments;
+        framebuffer_info.width = swap_chain_extent_.width;
+        framebuffer_info.height = swap_chain_extent_.height;
+        framebuffer_info.layers = 1;
+
+        if (vkCreateFramebuffer(device_, &framebuffer_info, nullptr, &swap_chain_framebuffers_[i]) != VK_SUCCESS) {
+          throw std::runtime_error("failed to create framebuffer!");
+        }
+      }
     }
 
     /**
