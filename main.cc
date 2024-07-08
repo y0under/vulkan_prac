@@ -130,6 +130,8 @@ class HelloTriangleApplication {
     VkPipelineLayout pipeline_layout_;
     VkPipeline graphics_pipeline_;
 
+    VkCommandPool commandPool;
+
     // functions
 
     /**
