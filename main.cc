@@ -130,7 +130,7 @@ class HelloTriangleApplication {
     VkPipelineLayout pipeline_layout_;
     VkPipeline graphics_pipeline_;
 
-    VkCommandPool commandPool;
+    VkCommandPool command_pool_;
 
     // functions
 
@@ -161,6 +161,7 @@ class HelloTriangleApplication {
       createRenderPass();
       createGraphicsPipeline();
       createFramebuffers();
+      createCommandPool();
     }
 
     /**
@@ -703,6 +704,13 @@ class HelloTriangleApplication {
           throw std::runtime_error("failed to create framebuffer!");
         }
       }
+    }
+
+    /**
+     * @brief 
+     */
+    void createCommandPool() {
+
     }
 
     /**
