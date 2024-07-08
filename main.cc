@@ -131,6 +131,7 @@ class HelloTriangleApplication {
     VkPipeline graphics_pipeline_;
 
     VkCommandPool command_pool_;
+    VkCommandBuffer command_buffer_;
 
     // functions
 
