@@ -108,7 +108,7 @@ class HelloTriangleApplication {
     GLFWwindow* window;
     VkInstance instance_;
     VkDebugUtilsMessengerEXT debugMessenger;
-    VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
+    VkPhysicalDevice physical_device_ = VK_NULL_HANDLE;
     // logical device
     VkDevice device_;
     // for queue handle
@@ -264,12 +264,12 @@ class HelloTriangleApplication {
       for (const auto& device: devices) {
         // pick first available device
         if (isDeviceSuitabe(device)) {
-          physicalDevice_ = device;
+          physical_device_ = device;
           break;
         }
       }
 
-      if (physicalDevice_ == VK_NULL_HANDLE)
+      if (physical_device_ == VK_NULL_HANDLE)
         throw std::runtime_error("failed to find a suitable GPU!!!!11!");
     }
 
@@ -277,7 +277,7 @@ class HelloTriangleApplication {
      * @brief 
      */
     void createLogicalDevice() {
-      QueueFamilyIndices indices = findQueueFamilies(physicalDevice_);
+      QueueFamilyIndices indices = findQueueFamilies(physical_device_);
 
       std::vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
       std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(),
@@ -312,7 +312,7 @@ class HelloTriangleApplication {
         create_info.enabledLayerCount = 0;
       }
 
-      if (vkCreateDevice(physicalDevice_, &create_info, nullptr, &device_) != VK_SUCCESS) {
+      if (vkCreateDevice(physical_device_, &create_info, nullptr, &device_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create logical device!!!!11!");
       }
 
@@ -324,7 +324,7 @@ class HelloTriangleApplication {
      * @brief 
      */
     void createSwapChain() {
-      SwapChainSupportDetails swap_chain_support = querySwapChainSupport(physicalDevice_);
+      SwapChainSupportDetails swap_chain_support = querySwapChainSupport(physical_device_);
 
       VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swap_chain_support.formats);
       VkPresentModeKHR presentMode = chooseSwapPresentMode(swap_chain_support.presentModes);
@@ -349,7 +349,7 @@ class HelloTriangleApplication {
       create_info.imageArrayLayers = 1;
       create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-      QueueFamilyIndices indices = findQueueFamilies(physicalDevice_);
+      QueueFamilyIndices indices = findQueueFamilies(physical_device_);
       uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
       if (indices.graphicsFamily != indices.presentFamily) {
@@ -710,7 +710,16 @@ class HelloTriangleApplication {
      * @brief 
      */
     void createCommandPool() {
+      QueueFamilyIndices queue_family_indices = findQueueFamilies(physical_device_);
 
+      VkCommandPoolCreateInfo pool_info{};
+      pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+      pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+      pool_info.queueFamilyIndex = queue_family_indices.graphicsFamily.value();
+
+      if (vkCreateCommandPool(device_, &pool_info, nullptr, &command_pool_) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create command pool!");
+      }
     }
 
     /**
@@ -898,6 +907,7 @@ class HelloTriangleApplication {
      * @brief destruct the app
      */
     void cleanup() {
+      vkDestroyCommandPool(device_, command_pool_, nullptr);
       for (auto buffer : swap_chain_framebuffers_) {
         vkDestroyFramebuffer(device_, buffer, nullptr);
       }
