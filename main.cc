@@ -755,6 +755,34 @@ class HelloTriangleApplication {
       if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
         throw std::runtime_error("failed to begin recording command buffer!");
       }
+
+      // to start renderpass
+      VkRenderPassBeginInfo render_pass_info{};
+      render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+      render_pass_info.renderPass = render_pass_;
+      render_pass_info.framebuffer = swap_chain_framebuffers_[image_index];
+
+      render_pass_info.renderArea.offset = {0, 0};
+      render_pass_info.renderArea.extent = swap_chain_extent_;
+
+      VkClearValue clear_color = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+      render_pass_info.clearValueCount = 1;
+      render_pass_info.pClearValues = &clear_color;
+
+      vkCmdBeginRenderPass(command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+      vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline_);
+
+      auto viewport = GenerateViewport();
+      vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+      auto scissor = GenerateScissor();
+      vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+
+      vkCmdDraw(command_buffer, 3, 1, 0, 0);
+
+      vkCmdEndRenderPass(command_buffer);
+      if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to record command buffer!");
+      }
     }
 
     /**
