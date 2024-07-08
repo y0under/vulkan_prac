@@ -728,7 +728,16 @@ class HelloTriangleApplication {
      * @brief 
      */
     void createCommandBuffer() {
+      VkCommandBufferAllocateInfo alloc_info{};
+      alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+      alloc_info.commandPool = command_pool_;
+      // primary or secondery
+      alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+      alloc_info.commandBufferCount = 1;
 
+      if (vkAllocateCommandBuffers(device_, &alloc_info, &command_buffer_) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate command buffers!");
+      }
     }
 
     /**
