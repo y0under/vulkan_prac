@@ -963,7 +963,16 @@ class HelloTriangleApplication {
       while (!glfwWindowShouldClose(window)) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE)) break;
         glfwPollEvents();
+        DrawFrame();
       }
+    }
+
+
+    /**
+     * @brief 
+     */
+    void DrawFrame() {
+
     }
 
     /**
