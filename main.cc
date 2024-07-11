@@ -113,6 +113,7 @@ class HelloTriangleApplication {
     VkDevice device_;
     // for queue handle
     VkQueue graphics_queue_;
+    VkQueue present_queue_;
 
     VkSurfaceKHR surface_;
 
@@ -329,6 +330,7 @@ class HelloTriangleApplication {
 
       // retrive queue handle
       vkGetDeviceQueue(device_, indices.graphicsFamily.value(), 0, &graphics_queue_);
+      vkGetDeviceQueue(device_, indices.presentFamily.value(), 0, &present_queue_);
     }
 
     /**
@@ -807,6 +809,19 @@ class HelloTriangleApplication {
       if (vkQueueSubmit(graphics_queue_, 1, &submit_info, in_flight_fence_) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
       }
+
+      VkPresentInfoKHR present_info{};
+      present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+      present_info.waitSemaphoreCount = 1;
+      present_info.pWaitSemaphores = signal_semaphores;
+      VkSwapchainKHR swap_chains[] = { swap_chain_ };
+      present_info.swapchainCount = 1;
+      present_info.pSwapchains = swap_chains;
+      present_info.pImageIndices = &image_index;
+      // optional for to check result per indivisual swapchain
+      present_info.pResults = nullptr;
+
+      vkQueuePresentKHR(present_queue_, &present_info);
     }
 
     /**
@@ -1032,16 +1047,10 @@ class HelloTriangleApplication {
       while (!glfwWindowShouldClose(window)) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE)) break;
         glfwPollEvents();
-        DrawFrame();
+        drawFrame();
       }
-    }
 
-
-    /**
-     * @brief 
-     */
-    void DrawFrame() {
-
+      vkDeviceWaitIdle(device_);
     }
 
     /**
