@@ -134,12 +134,12 @@ class HelloTriangleApplication {
     VkCommandBuffer command_buffer_;
 
     // for notation of able to render
-    VkSemaphore imageAvailableSemaphore;
+    VkSemaphore image_available_semaphore_;
     // for notation of able to presentation and
     // rendering is already finished
-    VkSemaphore renderFinishedSemaphore;
+    VkSemaphore render_finished_semaphore_;
     // limitation for unique frame to render
-    VkFence inFlightFence;
+    VkFence in_flight_fence_;
 
     // functions
 
@@ -172,6 +172,7 @@ class HelloTriangleApplication {
       createFramebuffers();
       createCommandPool();
       createCommandBuffer();
+      createSyncObjects();
     }
 
     /**
@@ -749,6 +750,21 @@ class HelloTriangleApplication {
     }
 
     /**
+     * @brief make semaphore
+     */
+    void createSyncObjects() {
+      VkSemaphoreCreateInfo semaphore_info{};
+      semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+      VkFenceCreateInfo fence_info{};
+      fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+      if (vkCreateSemaphore(device_, &semaphore_info, nullptr, &image_available_semaphore_) != VK_SUCCESS ||
+          vkCreateSemaphore(device_, &semaphore_info, nullptr, &render_finished_semaphore_) != VK_SUCCESS ||
+          vkCreateFence(device_, &fence_info, nullptr, &in_flight_fence_) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create semaphores!");
+      }
+    }
+
+    /**
      * @brief write command to command buffer
      *
      * @param command_buffer
@@ -987,6 +1003,9 @@ class HelloTriangleApplication {
      * @brief destruct the app
      */
     void cleanup() {
+      vkDestroySemaphore(device_, image_available_semaphore_, nullptr);
+      vkDestroySemaphore(device_, render_finished_semaphore_, nullptr);
+      vkDestroyFence(device_, in_flight_fence_, nullptr);
       vkDestroyCommandPool(device_, command_pool_, nullptr);
       for (auto buffer : swap_chain_framebuffers_) {
         vkDestroyFramebuffer(device_, buffer, nullptr);
