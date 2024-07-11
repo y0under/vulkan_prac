@@ -441,6 +441,15 @@ class HelloTriangleApplication {
       color_attachment_ref.attachment = 0;
       color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+      // dependency for subpass
+      VkSubpassDependency dependency{};
+      dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+      dependency.dstSubpass = 0;
+      dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+      dependency.srcAccessMask = 0;
+      dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+      dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
       VkSubpassDescription subpass{};
       subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
       subpass.colorAttachmentCount = 1;
@@ -452,6 +461,8 @@ class HelloTriangleApplication {
       render_pass_info.pAttachments = &color_attachment;
       render_pass_info.subpassCount = 1;
       render_pass_info.pSubpasses = &subpass;
+      render_pass_info.dependencyCount = 1;
+      render_pass_info.pDependencies = &dependency;
 
       if (vkCreateRenderPass(device_, &render_pass_info, nullptr, &render_pass_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create render pass!");
