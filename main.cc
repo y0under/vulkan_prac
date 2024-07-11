@@ -133,6 +133,14 @@ class HelloTriangleApplication {
     VkCommandPool command_pool_;
     VkCommandBuffer command_buffer_;
 
+    // for notation of able to render
+    VkSemaphore imageAvailableSemaphore;
+    // for notation of able to presentation and
+    // rendering is already finished
+    VkSemaphore renderFinishedSemaphore;
+    // limitation for unique frame to render
+    VkFence inFlightFence;
+
     // functions
 
     /**
