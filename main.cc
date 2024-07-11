@@ -112,7 +112,7 @@ class HelloTriangleApplication {
     // logical device
     VkDevice device_;
     // for queue handle
-    VkQueue graphicsQueue;
+    VkQueue graphics_queue_;
 
     VkSurfaceKHR surface_;
 
@@ -328,7 +328,7 @@ class HelloTriangleApplication {
       }
 
       // retrive queue handle
-      vkGetDeviceQueue(device_, indices.graphicsFamily.value(), 0, &graphicsQueue);
+      vkGetDeviceQueue(device_, indices.graphicsFamily.value(), 0, &graphics_queue_);
     }
 
     /**
@@ -757,10 +757,44 @@ class HelloTriangleApplication {
       semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
       VkFenceCreateInfo fence_info{};
       fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+      // generate with signal state
+      fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
       if (vkCreateSemaphore(device_, &semaphore_info, nullptr, &image_available_semaphore_) != VK_SUCCESS ||
           vkCreateSemaphore(device_, &semaphore_info, nullptr, &render_finished_semaphore_) != VK_SUCCESS ||
           vkCreateFence(device_, &fence_info, nullptr, &in_flight_fence_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create semaphores!");
+      }
+    }
+
+    /**
+     * @brief 
+     */
+    void drawFrame() {
+      vkWaitForFences(device_, 1, &in_flight_fence_, VK_TRUE, UINT64_MAX);
+      vkResetFences(device_, 1, &in_flight_fence_);
+
+      uint32_t image_index;
+      vkAcquireNextImageKHR(device_, swap_chain_, UINT64_MAX, image_available_semaphore_, VK_NULL_HANDLE, &image_index);
+
+      // record command buffer
+      vkResetCommandBuffer(command_buffer_, 0);
+      recordCommandBuffer(command_buffer_, image_index);
+
+      // send command buffer
+      VkSubmitInfo submit_info{};
+      submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+      VkSemaphore wait_semaphores[] = { image_available_semaphore_};
+      VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+      submit_info.waitSemaphoreCount = 1;
+      submit_info.pWaitSemaphores = wait_semaphores;
+      submit_info.pWaitDstStageMask = wait_stages;
+      submit_info.commandBufferCount = 1;
+      submit_info.pCommandBuffers = &command_buffer_;
+      VkSemaphore signal_semaphores[] = { render_finished_semaphore_ };
+      submit_info.signalSemaphoreCount = 1;
+      submit_info.pSignalSemaphores = signal_semaphores;
+      if (vkQueueSubmit(graphics_queue_, 1, &submit_info, in_flight_fence_) != VK_SUCCESS) {
+        throw std::runtime_error("failed to submit draw command buffer!");
       }
     }
 
