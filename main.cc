@@ -790,6 +790,18 @@ class HelloTriangleApplication {
       }
     }
 
+
+    /**
+     * @brief 
+     */
+    void recreatesWAPcHAIn() {
+      vkDeviceWaitIdle(device_);
+
+      createSwapChain();
+      createImageViews();
+      createFramebuffers();
+    }
+
     /**
      * @brief 
      */
