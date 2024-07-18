@@ -790,12 +790,13 @@ class HelloTriangleApplication {
       }
     }
 
-
     /**
      * @brief 
      */
-    void recreatesWAPcHAIn() {
+    void recreateSwapChain() {
       vkDeviceWaitIdle(device_);
+
+      cleanupSwapChain();
 
       createSwapChain();
       createImageViews();
@@ -1076,6 +1077,21 @@ class HelloTriangleApplication {
       }
 
       vkDeviceWaitIdle(device_);
+    }
+
+    /**
+     * @brief 
+     */
+    void cleanupSwapChain() {
+      for (size_t i = 0; i < swap_chain_framebuffers_.size(); i++) {
+        vkDestroyFramebuffer(device_, swap_chain_framebuffers_[i], nullptr);
+      }
+
+      for (size_t i = 0; i < swap_chain_image_views_.size(); i++) {
+        vkDestroyImageView(device_, swap_chain_image_views_[i], nullptr);
+      }
+
+      vkDestroySwapchainKHR(device_, swap_chain_, nullptr);
     }
 
     /**
