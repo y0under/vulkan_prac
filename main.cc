@@ -1083,12 +1083,12 @@ class HelloTriangleApplication {
      * @brief 
      */
     void cleanupSwapChain() {
-      for (size_t i = 0; i < swap_chain_framebuffers_.size(); i++) {
-        vkDestroyFramebuffer(device_, swap_chain_framebuffers_[i], nullptr);
+      for (auto buffer: swap_chain_framebuffers_) {
+        vkDestroyFramebuffer(device_, buffer, nullptr);
       }
 
-      for (size_t i = 0; i < swap_chain_image_views_.size(); i++) {
-        vkDestroyImageView(device_, swap_chain_image_views_[i], nullptr);
+      for (auto image_view: swap_chain_image_views_) {
+        vkDestroyImageView(device_, image_view, nullptr);
       }
 
       vkDestroySwapchainKHR(device_, swap_chain_, nullptr);
@@ -1098,6 +1098,12 @@ class HelloTriangleApplication {
      * @brief destruct the app
      */
     void cleanup() {
+      cleanupSwapChain();
+
+      vkDestroyPipeline(device_, graphics_pipeline_, nullptr);
+      vkDestroyPipelineLayout(device_, pipeline_layout_, nullptr);
+      vkDestroyRenderPass(device_, render_pass_, nullptr);
+
       for (size_t i = 0; i < kmax_frames_in_flight; ++i) {
         vkDestroySemaphore(device_, image_available_semaphores_[i], nullptr);
         vkDestroySemaphore(device_, render_finished_semaphores_[i], nullptr);
@@ -1106,13 +1112,6 @@ class HelloTriangleApplication {
 
       // NOTE: when cmmand pool is flashed, command buffer do.
       vkDestroyCommandPool(device_, command_pool_, nullptr);
-      for (auto buffer : swap_chain_framebuffers_) {
-        vkDestroyFramebuffer(device_, buffer, nullptr);
-      }
-      vkDestroyPipeline(device_, graphics_pipeline_, nullptr);
-      vkDestroyPipelineLayout(device_, pipeline_layout_, nullptr);
-      vkDestroyRenderPass(device_, render_pass_, nullptr);
-      vkDestroySwapchainKHR(device_, swap_chain_, nullptr);
       vkDestroyDevice(device_, nullptr);
 
       if (enableValidationLayers) {
