@@ -811,7 +811,15 @@ class HelloTriangleApplication {
       vkResetFences(device_, 1, &in_flight_fences_[current_frame_]);
 
       uint32_t image_index;
-      vkAcquireNextImageKHR(device_, swap_chain_, UINT64_MAX, image_available_semaphores_[current_frame_], VK_NULL_HANDLE, &image_index);
+      VkResult result = vkAcquireNextImageKHR(device_, swap_chain_, UINT64_MAX, image_available_semaphores_[current_frame_], VK_NULL_HANDLE, &image_index);
+      if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        recreateSwapChain();
+        return;
+      }
+
+      if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("failed to acquire swap chain image!");
+      }
 
       // record command buffer
       vkResetCommandBuffer(command_buffers_[current_frame_], 0);
@@ -845,7 +853,14 @@ class HelloTriangleApplication {
       // optional for to check result per indivisual swapchain
       present_info.pResults = nullptr;
 
-      vkQueuePresentKHR(present_queue_, &present_info);
+      result = vkQueuePresentKHR(present_queue_, &present_info);
+      if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+        recreateSwapChain();
+      }
+
+      if (result != VK_SUCCESS) {
+        throw std::runtime_error("failed to present swap chain image!");
+      }
 
       current_frame_ = (current_frame_ + 1) % kmax_frames_in_flight;
     }
