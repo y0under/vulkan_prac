@@ -143,6 +143,9 @@ class HelloTriangleApplication {
     // limitation for unique frame to render
     std::vector<VkFence> in_flight_fences_;
 
+    // indicator for noting resized
+    bool framebuffer_resized_ = false;
+
     // for trace now frame
     uint32_t current_frame_ = 0;
 
@@ -159,6 +162,8 @@ class HelloTriangleApplication {
       glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
       // width, height and title
       window = glfwCreateWindow(kwidth, kheight, "Vulkan test", nullptr, nullptr);
+      glfwSetWindowUserPointer(window, this);
+      glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
     }
 
     /**
@@ -808,7 +813,6 @@ class HelloTriangleApplication {
      */
     void drawFrame() {
       vkWaitForFences(device_, 1, &in_flight_fences_[current_frame_], VK_TRUE, UINT64_MAX);
-      vkResetFences(device_, 1, &in_flight_fences_[current_frame_]);
 
       uint32_t image_index;
       VkResult result = vkAcquireNextImageKHR(device_, swap_chain_, UINT64_MAX, image_available_semaphores_[current_frame_], VK_NULL_HANDLE, &image_index);
@@ -820,6 +824,8 @@ class HelloTriangleApplication {
       if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("failed to acquire swap chain image!");
       }
+
+      vkResetFences(device_, 1, &in_flight_fences_[current_frame_]);
 
       // record command buffer
       vkResetCommandBuffer(command_buffers_[current_frame_], 0);
@@ -854,7 +860,10 @@ class HelloTriangleApplication {
       present_info.pResults = nullptr;
 
       result = vkQueuePresentKHR(present_queue_, &present_info);
-      if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+      if (result == VK_ERROR_OUT_OF_DATE_KHR ||
+          result == VK_SUBOPTIMAL_KHR ||
+          framebuffer_resized_) {
+        framebuffer_resized_ = false;
         recreateSwapChain();
       }
 
@@ -1258,6 +1267,18 @@ class HelloTriangleApplication {
       file.close();
 
       return buffer;
+    }
+
+    /**
+     * @brief 
+     *
+     * @param window
+     * @param width
+     * @param height
+     */
+    static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+      auto app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
+      app->framebuffer_resized_ = true;
     }
 };
 
