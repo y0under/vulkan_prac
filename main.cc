@@ -18,6 +18,66 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
+template<typename T>
+struct Vector2 {
+  T x;
+  T y;
+};
+
+template<typename T>
+struct Vector3 {
+  T x;
+  T y;
+  T z;
+};
+
+struct Vertex {
+  Vector2<float> pos;
+  Vector3<float> color;
+
+  /**
+   * @brief to input data
+   *
+   * @return 
+   */
+  static VkVertexInputBindingDescription getBindingDescription() {
+    VkVertexInputBindingDescription binding_description{};
+    binding_description.binding = 0;
+    binding_description.stride = sizeof(Vertex);
+    binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    return binding_description;
+  }
+
+  /**
+   * @brief determin processing for vertex input
+   *
+   * @return 
+   */
+  static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+    // for vertices
+    std::array<VkVertexInputAttributeDescription, 2> attribute_descriptions{};
+    attribute_descriptions[0].binding = 0;
+    attribute_descriptions[0].location = 0;
+    attribute_descriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+    attribute_descriptions[0].offset = offsetof(Vertex, pos);
+
+    // for colors
+    attribute_descriptions[1].binding = 0;
+    attribute_descriptions[1].location = 1;
+    attribute_descriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attribute_descriptions[1].offset = offsetof(Vertex, color);
+
+    return attribute_descriptions;
+  }
+};
+
+const std::vector<Vertex> vertices = {
+    {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+};
+
 /**
  * @brief 
  *
@@ -508,8 +568,12 @@ class HelloTriangleApplication {
 
       VkPipelineVertexInputStateCreateInfo vertex_input_info{};
       vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-      vertex_input_info.vertexBindingDescriptionCount = 0;
-      vertex_input_info.vertexAttributeDescriptionCount = 0;
+      auto binding_description = Vertex::getBindingDescription();
+      vertex_input_info.vertexBindingDescriptionCount = 1;
+      auto attribute_descriptions = Vertex::getAttributeDescriptions();
+      vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
+      vertex_input_info.pVertexBindingDescriptions = &binding_description;
+      vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions.data();
 
       VkPipelineInputAssemblyStateCreateInfo input_assembly{};
       input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
