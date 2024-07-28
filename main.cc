@@ -241,6 +241,7 @@ class HelloTriangleApplication {
       createGraphicsPipeline();
       createFramebuffers();
       createCommandPool();
+      createVertexBuffer();
       createCommandBuffer();
       createSyncObjects();
     }
@@ -817,6 +818,12 @@ class HelloTriangleApplication {
       if (vkCreateCommandPool(device_, &pool_info, nullptr, &command_pool_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create command pool!");
       }
+    }
+
+    /**
+     * @brief 
+     */
+    void createVertexBuffer() {
     }
 
     /**
