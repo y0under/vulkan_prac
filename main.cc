@@ -209,6 +209,8 @@ class HelloTriangleApplication {
     // for trace now frame
     uint32_t current_frame_ = 0;
 
+    VkBuffer vertex_buffer_;
+
     // functions
 
     /**
@@ -824,6 +826,15 @@ class HelloTriangleApplication {
      * @brief 
      */
     void createVertexBuffer() {
+      VkBufferCreateInfo buffer_info{};
+      buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+      buffer_info.size = sizeof(vertices[0]) * vertices.size();
+      buffer_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+      buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+      if (vkCreateBuffer(device_, &buffer_info, nullptr, &vertex_buffer_) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create vertex buffer!");
+      }
     }
 
     /**
@@ -1202,6 +1213,8 @@ class HelloTriangleApplication {
      */
     void cleanup() {
       cleanupSwapChain();
+
+      vkDestroyBuffer(device_, vertex_buffer_, nullptr);
 
       vkDestroyPipeline(device_, graphics_pipeline_, nullptr);
       vkDestroyPipelineLayout(device_, pipeline_layout_, nullptr);
