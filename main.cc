@@ -827,7 +827,28 @@ class HelloTriangleApplication {
      * @brief 
      */
     void createVertexBuffer() {
-      // buffer
+      VkDeviceSize buffer_size = sizeof(vertices[0]) * vertices.size();
+      createBuffer(buffer_size,
+                   VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                   vertex_buffer_,
+                   vertex_buffer_memory_);
+
+      // copy vertices data to buffer
+      void* data;
+      vkMapMemory(device_, vertex_buffer_memory_, 0, buffer_size, 0, &data);
+      memcpy(data, vertices.data(), (size_t) buffer_size);
+      vkUnmapMemory(device_, vertex_buffer_memory_);
+    }
+
+    /**
+     * @brief helper for createVertexBuffer
+     */
+    void createBuffer(VkDeviceSize size,
+                      VkBufferUsageFlags usage,
+                      VkMemoryPropertyFlags properties,
+                      VkBuffer &vertex_buffer,
+                      VkDeviceMemory& vertex_buffer_memory) {
       VkBufferCreateInfo buffer_info{};
       buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
       buffer_info.size = sizeof(vertices[0]) * vertices.size();
@@ -840,7 +861,7 @@ class HelloTriangleApplication {
 
       // memory
       VkMemoryRequirements mem_requirements;
-      vkGetBufferMemoryRequirements(device_, vertex_buffer_, &mem_requirements);
+      vkGetBufferMemoryRequirements(device_, vertex_buffer, &mem_requirements);
 
       VkMemoryAllocateInfo alloc_info{};
       alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -849,17 +870,11 @@ class HelloTriangleApplication {
         findMemoryType(mem_requirements.memoryTypeBits,
                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-      if (vkAllocateMemory(device_, &alloc_info, nullptr, &vertex_buffer_memory_) != VK_SUCCESS) {
+      if (vkAllocateMemory(device_, &alloc_info, nullptr, &vertex_buffer_memory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate vertex buffer memory!");
       }
 
-      vkBindBufferMemory(device_, vertex_buffer_, vertex_buffer_memory_, 0);
-
-      // copy vertices data to buffer
-      void* data;
-      vkMapMemory(device_, vertex_buffer_memory_, 0, buffer_info.size, 0, &data);
-      memcpy(data, vertices.data(), (size_t) buffer_info.size);
-      vkUnmapMemory(device_, vertex_buffer_memory_);
+      vkBindBufferMemory(device_, vertex_buffer, vertex_buffer_memory, 0);
     }
 
     /**
