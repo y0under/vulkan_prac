@@ -828,17 +828,30 @@ class HelloTriangleApplication {
      */
     void createVertexBuffer() {
       VkDeviceSize buffer_size = sizeof(vertices[0]) * vertices.size();
+
+      VkBuffer staging_buffer;
+      VkDeviceMemory staging_buffer_memory;
       createBuffer(buffer_size,
-                   VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                   VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                   vertex_buffer_,
-                   vertex_buffer_memory_);
+                   staging_buffer,
+                   staging_buffer_memory);
 
       // copy vertices data to buffer
       void* data;
-      vkMapMemory(device_, vertex_buffer_memory_, 0, buffer_size, 0, &data);
-      memcpy(data, vertices.data(), (size_t) buffer_size);
-      vkUnmapMemory(device_, vertex_buffer_memory_);
+      vkMapMemory(device_, staging_buffer_memory, 0, buffer_size, 0, &data);
+      memcpy(data, vertices.data(), static_cast<size_t>(buffer_size));
+      vkUnmapMemory(device_, staging_buffer_memory);
+
+      createBuffer(buffer_size,
+                   VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                   VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                   vertex_buffer_,
+                   vertex_buffer_memory_);
+
+      copyBuffer(staging_buffer, vertex_buffer_, buffer_size);
+      vkDestroyBuffer(device_, staging_buffer, nullptr);
+      vkFreeMemory(device_, staging_buffer_memory, nullptr);
     }
 
     /**
@@ -855,7 +868,7 @@ class HelloTriangleApplication {
       buffer_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
       buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-      if (vkCreateBuffer(device_, &buffer_info, nullptr, &vertex_buffer_) != VK_SUCCESS) {
+      if (vkCreateBuffer(device_, &buffer_info, nullptr, &vertex_buffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to create vertex buffer!");
       }
 
@@ -875,6 +888,46 @@ class HelloTriangleApplication {
       }
 
       vkBindBufferMemory(device_, vertex_buffer, vertex_buffer_memory, 0);
+    }
+
+    /**
+     * @brief 
+     *
+     * @param src_buffer
+     * @param dst_buffer
+     * @param size
+     */
+    void copyBuffer(VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size) {
+      VkCommandBufferAllocateInfo alloc_info{};
+      alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+      alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+      alloc_info.commandPool = command_pool_;
+      alloc_info.commandBufferCount = 1;
+
+      VkCommandBuffer command_buffer;
+      vkAllocateCommandBuffers(device_, &alloc_info, &command_buffer);
+
+      VkCommandBufferBeginInfo begin_info{};
+      begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+      begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+      vkBeginCommandBuffer(command_buffer, &begin_info);
+
+      VkBufferCopy copy_region{};
+      copy_region.size = size;
+      vkCmdCopyBuffer(command_buffer, src_buffer, dst_buffer, 1, &copy_region);
+
+      vkEndCommandBuffer(command_buffer);
+
+      VkSubmitInfo submit_info{};
+      submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+      submit_info.commandBufferCount = 1;
+      submit_info.pCommandBuffers = &command_buffer;
+
+      vkQueueSubmit(graphics_queue_, 1, &submit_info, VK_NULL_HANDLE);
+      vkQueueWaitIdle(graphics_queue_);
+
+      vkFreeCommandBuffers(device_, command_pool_, 1, &command_buffer);
     }
 
     /**
