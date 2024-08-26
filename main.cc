@@ -73,9 +73,14 @@ struct Vertex {
 };
 
 const std::vector<Vertex> vertices = {
-    {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+};
+
+const std::vector<uint16_t> indices = {
+    0, 1, 2, 2, 3, 0
 };
 
 /**
@@ -211,6 +216,8 @@ class HelloTriangleApplication {
 
     VkBuffer vertex_buffer_;
     VkDeviceMemory vertex_buffer_memory_;
+    VkBuffer index_buffer_;
+    VkDeviceMemory index_buffer_memory_;
 
     // functions
 
@@ -245,6 +252,7 @@ class HelloTriangleApplication {
       createFramebuffers();
       createCommandPool();
       createVertexBuffer();
+      createIndexBuffer();
       createCommandBuffer();
       createSyncObjects();
     }
@@ -952,6 +960,35 @@ class HelloTriangleApplication {
       throw std::runtime_error("failed to find suitable memory type!");
     }
 
+    /**
+     * @brief 
+     */
+    void createIndexBuffer() {
+      VkDeviceSize buffer_size = sizeof(indices[0]) * indices.size();
+
+      VkBuffer staging_buffer;
+      VkDeviceMemory staging_buffer_memory;
+      createBuffer(buffer_size,
+                   VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                   staging_buffer, staging_buffer_memory);
+
+      void *data;
+      vkMapMemory(device_, staging_buffer_memory, 0, buffer_size, 0, &data);
+      memcpy(data, indices.data(), (size_t)buffer_size);
+      vkUnmapMemory(device_, staging_buffer_memory);
+
+      createBuffer(buffer_size,
+                   VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                   VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                   index_buffer_,
+                   index_buffer_memory_);
+
+      copyBuffer(staging_buffer, index_buffer_, buffer_size);
+
+      vkDestroyBuffer(device_, staging_buffer, nullptr);
+      vkFreeMemory(device_, staging_buffer_memory, nullptr);
+    }
 
     /**
      * @brief 
@@ -1333,6 +1370,9 @@ class HelloTriangleApplication {
      */
     void cleanup() {
       cleanupSwapChain();
+
+      vkDestroyBuffer(device_, index_buffer_, nullptr);
+      vkFreeMemory(device_, index_buffer_memory_, nullptr);
 
       vkDestroyBuffer(device_, vertex_buffer_, nullptr);
       vkFreeMemory(device_, vertex_buffer_memory_, nullptr);
