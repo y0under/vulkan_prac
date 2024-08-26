@@ -1158,7 +1158,9 @@ class HelloTriangleApplication {
       VkDeviceSize offsets[] = {0};
       vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
 
-      vkCmdDraw(command_buffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+      vkCmdBindIndexBuffer(command_buffer, index_buffer_, 0, VK_INDEX_TYPE_UINT16);
+
+      vkCmdDrawIndexed(command_buffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
       vkCmdEndRenderPass(command_buffer);
       if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
