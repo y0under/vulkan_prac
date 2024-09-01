@@ -31,6 +31,14 @@ struct Vector3 {
   T z;
 };
 
+template<typename T>
+struct Matrix4x4 {
+  T m11, m12, m13, m14;
+  T m21, m22, m23, m24;
+  T m31, m32, m33, m34;
+  T m41, m42, m43, m44;
+};
+
 struct Vertex {
   Vector2<float> pos;
   Vector3<float> color;
@@ -70,6 +78,12 @@ struct Vertex {
 
     return attribute_descriptions;
   }
+};
+
+struct UniformBufferObject {
+    Matrix4x4<float> model;
+    Matrix4x4<float> view;
+    Matrix4x4<float> proj;
 };
 
 const std::vector<Vertex> vertices = {
