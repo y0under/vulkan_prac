@@ -208,6 +208,7 @@ class HelloTriangleApplication {
     std::vector<VkFramebuffer> swap_chain_framebuffers_;
 
     VkRenderPass render_pass_;
+    VkDescriptorSetLayout descriptor_set_layout_;
     VkPipelineLayout pipeline_layout_;
     VkPipeline graphics_pipeline_;
 
@@ -262,6 +263,7 @@ class HelloTriangleApplication {
       createSwapChain();
       createImageViews();
       createRenderPass();
+      createDescriptorSetLayout();
       createGraphicsPipeline();
       createFramebuffers();
       createCommandPool();
@@ -566,6 +568,27 @@ class HelloTriangleApplication {
       }
     }
 
+    /**
+     * @brief 
+     */
+    void createDescriptorSetLayout() {
+      VkDescriptorSetLayoutBinding ubo_layout_binding{};
+      ubo_layout_binding.binding = 0;
+      ubo_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+      ubo_layout_binding.descriptorCount = 1;
+      ubo_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+      ubo_layout_binding.pImmutableSamplers = nullptr;
+
+      VkDescriptorSetLayoutCreateInfo layout_info{};
+      layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+      layout_info.bindingCount = 1;
+      layout_info.pBindings = &ubo_layout_binding;
+
+      if (vkCreateDescriptorSetLayout(device_, &layout_info,
+                                      nullptr, &descriptor_set_layout_) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create descriptor set layout!");
+      }
+    }
 
     /**
      * @brief 
@@ -673,10 +696,10 @@ class HelloTriangleApplication {
     VkPipelineLayoutCreateInfo GeneratePipelineLayoutInfo() {
       VkPipelineLayoutCreateInfo pipeline_layout_info{};
       pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-      pipeline_layout_info.setLayoutCount = 0;
-      pipeline_layout_info.pSetLayouts = nullptr;
-      pipeline_layout_info.pushConstantRangeCount = 0;
-      pipeline_layout_info.pPushConstantRanges = nullptr;
+      pipeline_layout_info.setLayoutCount = 1;
+      pipeline_layout_info.pSetLayouts = &descriptor_set_layout_;
+      // pipeline_layout_info.pushConstantRangeCount = 0;
+      // pipeline_layout_info.pPushConstantRanges = nullptr;
       return pipeline_layout_info;
     }
 
@@ -1386,6 +1409,8 @@ class HelloTriangleApplication {
      */
     void cleanup() {
       cleanupSwapChain();
+
+      vkDestroyDescriptorSetLayout(device_, descriptor_set_layout_, nullptr);
 
       vkDestroyBuffer(device_, index_buffer_, nullptr);
       vkFreeMemory(device_, index_buffer_memory_, nullptr);
