@@ -234,6 +234,10 @@ class HelloTriangleApplication {
     VkBuffer index_buffer_;
     VkDeviceMemory index_buffer_memory_;
 
+    std::vector<VkBuffer> uniform_buffers_;
+    std::vector<VkDeviceMemory> uniform_buffers_memory_;
+    std::vector<void*> uniform_buffers_mapped_;
+
     // functions
 
     /**
@@ -269,6 +273,7 @@ class HelloTriangleApplication {
       createCommandPool();
       createVertexBuffer();
       createIndexBuffer();
+      createUniformBuffers();
       createCommandBuffer();
       createSyncObjects();
     }
@@ -1028,6 +1033,28 @@ class HelloTriangleApplication {
     }
 
     /**
+     * @brief for indicate buffer with uniform buffer object
+     */
+    void createUniformBuffers() {
+      VkDeviceSize buffer_size = sizeof(UniformBufferObject);
+
+      uniform_buffers_.resize(kmax_frames_in_flight);
+      uniform_buffers_memory_.resize(kmax_frames_in_flight);
+      uniform_buffers_mapped_.resize(kmax_frames_in_flight);
+
+      for (size_t i = 0; i < kmax_frames_in_flight; i++) {
+        createBuffer(buffer_size,
+                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                     uniform_buffers_[i],
+                     uniform_buffers_memory_[i]);
+
+        vkMapMemory(device_, uniform_buffers_memory_[i],
+                    0, buffer_size, 0, &uniform_buffers_mapped_[i]);
+      }
+    }
+
+    /**
      * @brief 
      */
     void createCommandBuffer() {
@@ -1409,6 +1436,11 @@ class HelloTriangleApplication {
      */
     void cleanup() {
       cleanupSwapChain();
+
+      for (size_t i = 0; i < kmax_frames_in_flight; i++) {
+        vkDestroyBuffer(device_, uniform_buffers_[i], nullptr);
+        vkFreeMemory(device_, uniform_buffers_memory_[i], nullptr);
+      }
 
       vkDestroyDescriptorSetLayout(device_, descriptor_set_layout_, nullptr);
 
