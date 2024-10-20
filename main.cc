@@ -1,6 +1,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -8,6 +9,8 @@
 #include <optional>
 #include <set>
 #include <stdexcept>
+
+#include "y0_core/math/Matrix.h"
 
 // TODO: when include vulkan.h, delete the definition
 #define VK_MVK_MACOS_SURFACE_EXTENSION_NAME "VK_MVK_macos_surface"
@@ -81,9 +84,10 @@ struct Vertex {
 };
 
 struct UniformBufferObject {
-    Matrix4x4<float> model;
-    Matrix4x4<float> view;
-    Matrix4x4<float> proj;
+  using float_matrix = y0_engine::Matrix<float>;
+  float_matrix model{};
+  float_matrix view{};
+  float_matrix proj{};
 };
 
 const std::vector<Vertex> vertices = {
@@ -1179,6 +1183,30 @@ class HelloTriangleApplication {
       }
 
       current_frame_ = (current_frame_ + 1) % kmax_frames_in_flight;
+    }
+
+    /**
+     * @brief 
+     *
+     * @param crrent_image
+     */
+    void updateUniformBuffer(uint32_t current_image) {
+      static auto start_time = std::chrono::high_resolution_clock::now();
+
+      auto current_time = std::chrono::high_resolution_clock::now();
+      float elapsed_time = std::chrono::duration<float, std::chrono::seconds::period>(
+                             current_time - start_time).count();
+
+      using float_matrix = y0_engine::Matrix<float>;
+
+      UniformBufferObject ubo{};
+      ubo.model = float_matrix::rotate_matrix(90.0f, 0.0f, 0.0f, 1.0f);
+      ubo.view = float_matrix::view_conversion_matrix(2.0f, 2.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+      ubo.proj = float_matrix::perspective(45.0f, swap_chain_extent_.width / (float)swap_chain_extent_.height, 0.1f, 10.0f);
+      // attention: for glm
+      // ubo.proj[1][1] *= -1;
+
+      memcpy(uniform_buffers_mapped_[current_image], &ubo, sizeof(ubo));
     }
 
     /**
